@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page personnelle - Agent immobilier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 1em 0;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 2em 0;
+        }
+        .section-title {
+            border-bottom: 2px solid #003366;
+            padding-bottom: 0.5em;
+            margin-bottom: 1em;
+        }
+        .project {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 1em;
+            margin-bottom: 1em;
+            background-color: white;
+        }
+        .project img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        footer {
+            background-color: #003366;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        .contact-form input, .contact-form textarea {
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .contact-form button {
+            background-color: #003366;
+            color: white;
+            padding: 0.5em 2em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Agent Immobilier en Israël</h1>
+        <p>20 ans d'expérience - Réseau direct de promoteurs et constructeurs</p>
+    </header>
+    <div class="container">
+        <section id="about">
+            <h2 class="section-title">À propos de moi</h2>
+            <p>Je suis un agent immobilier spécialisé dans la commercialisation de projets neufs en construction. Avec 20 ans d'expérience dans le secteur, je vous aide à trouver votre premier pied-à-terre tout en vous garantissant un investissement gagnant.</p>
+        </section>
+        <section id="projects">
+            <h2 class="section-title">Projets en cours</h2>
+            <div class="project">
+                <h3>Nom du projet 1</h3>
+                <img src="chemin/vers/image1.jpg" alt="Image du projet 1">
+                <p>Description du projet 1. Détails sur les offres de lancement ou les options de financement disponibles.</p>
+            </div>
+            <div class="project">
+                <h3>Nom du projet 2</h3>
+                <img src="chemin/vers/image2.jpg" alt="Image du projet 2">
+                <p>Description du projet 2. Détails sur les offres de lancement ou les options de financement disponibles.</p>
+            </div>
+            <!-- Ajoute d'autres projets ici -->
+        </section>
+        <section id="contact">
+            <h2 class="section-title">Contact</h2>
+            <form class="contact-form" action="mailto:votre-email@example.com" method="post" enctype="text/plain">
+                <input type="text" name="name" placeholder="Votre nom" required>
+                <input type="email" name="email" placeholder="Votre email" required>
+                <textarea name="message" rows="4" placeholder="Votre message" required></textarea>
+                <button type="submit">Envoyer</button>
+            </form>
+        </section>
+    </div>
+    <footer>
+        <p>&copy; 2024 Agent Immobilier en Israël. Tous droits réservés.</p>
+    </footer>
+</body>
+</html>
