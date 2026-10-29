@@ -31,7 +31,7 @@ export function PiedDePage() {
               <li><Link href="/formalites#modification">Modification</Link></li>
               <li><Link href="/formalites#cessation">Cessation</Link></li>
               <li><Link href="/formalites/comptes/depot-comptes-annuels">Dépôt des comptes</Link></li>
-              <li><Link href="/formalites/tarifs">Honoraires</Link></li>
+              <li><Link href="/formalites/tarifs">Tarifs formalités</Link></li>
             </ul>
           </div>
           <div>

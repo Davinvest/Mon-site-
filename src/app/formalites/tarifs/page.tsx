@@ -2,12 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BandeauCta } from '@/components/BandeauCta'
 import { FilAriane } from '@/components/FilAriane'
-import { CATEGORIES_FORMALITES, FORMALITES } from '@/data/formalites'
+import { CATEGORIES_FORMALITES, FORMALITES, forfaitAnnonce, prixAccompagnement } from '@/data/formalites'
 import { euros } from '@/lib/prix'
 
 export const metadata: Metadata = {
-  title: 'Honoraires des formalités d’entreprise',
-  description: 'Honoraires forfaitaires Comptoir Légal pour la création, la modification et la cessation de société, hors frais officiels.',
+  title: 'Tarifs des formalités d’entreprise',
+  description: 'Prix officiels des annonces légales liées à chaque formalité de société, et accompagnement sur devis.',
   alternates: { canonical: '/formalites/tarifs' },
 }
 
@@ -16,11 +16,11 @@ export default function TarifsFormalites() {
     <>
       <section className="heros" style={{ paddingBottom: 24 }}>
         <div className="conteneur">
-          <FilAriane elements={[{ nom: 'Formalités', href: '/formalites' }, { nom: 'Honoraires' }]} />
-          <h1>Nos honoraires</h1>
+          <FilAriane elements={[{ nom: 'Formalités', href: '/formalites' }, { nom: 'Tarifs' }]} />
+          <h1>Tarifs des formalités</h1>
           <p className="chapo">
-            Un forfait par formalité, annoncé avant de commencer. Les frais officiels (greffe, INPI) et l’annonce légale s’ajoutent à
-            leur tarif réglementé, sans marge, et figurent sur le devis.
+            L’annonce légale et les frais de greffe sont des tarifs officiels, les mêmes partout en France. L’accompagnement par un
+            formaliste fait l’objet d’un devis gratuit, envoyé avant tout engagement.
           </p>
         </div>
       </section>
@@ -34,8 +34,8 @@ export default function TarifsFormalites() {
                   <thead>
                     <tr>
                       <th>Formalité</th>
-                      <th className="montant">Honoraires HT</th>
-                      <th className="montant">Honoraires TTC</th>
+                      <th className="montant">Annonce légale (tarif officiel HT)</th>
+                      <th className="montant">Accompagnement</th>
                       <th className="montant">
                         <span className="sr-only">Détail</span>
                       </th>
@@ -45,8 +45,8 @@ export default function TarifsFormalites() {
                     {FORMALITES.filter((f) => f.categorie === c.slug).map((f) => (
                       <tr key={f.slug}>
                         <td>{f.titre}</td>
-                        <td className="montant">{euros(f.honoraires)}</td>
-                        <td className="montant">{euros(Math.round(f.honoraires * 120) / 100)}</td>
+                        <td className="montant">{f.annonce ? (forfaitAnnonce(f) !== null ? euros(forfaitAnnonce(f) as number) : 'au caractère') : '—'}</td>
+                        <td className="montant">{prixAccompagnement(f)}</td>
                         <td className="montant">
                           <Link href={`/formalites/${f.categorie}/${f.slug}`}>Détail</Link>
                         </td>
@@ -58,8 +58,8 @@ export default function TarifsFormalites() {
             </div>
           ))}
           <p className="muted petit">
-            Les honoraires couvrent la vérification, le dépôt et le suivi du dossier. Ne sont pas compris : la rédaction des statuts ou des
-            procès-verbaux (sur devis), les frais de greffe et d’INPI, l’annonce légale.
+            Tarifs des annonces : arrêté en vigueur, hors La Réunion et Mayotte (voir la grille complète des annonces légales). Les frais
+            de greffe et d’INPI s’ajoutent à leur tarif réglementé et figurent sur le devis.
           </p>
         </div>
       </section>

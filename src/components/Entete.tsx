@@ -52,7 +52,7 @@ export function Entete() {
                   Voir les formalités
                 </Link>
                 <p className="petit" style={{ marginTop: 12 }}>
-                  <Link href="/formalites/tarifs">Nos honoraires</Link>
+                  <Link href="/formalites/tarifs">Tarifs des formalités</Link>
                 </p>
               </div>
               <div className="mega-cols">

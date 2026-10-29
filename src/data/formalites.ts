@@ -1,8 +1,14 @@
+import { trouverType } from './annonces'
+import { FORFAITS } from './tarifs-annonces'
+
 /**
  * Formalités prises en charge (dépôt au guichet unique de l'INPI).
- * Les honoraires sont INDICATIFS : à valider par Comptoir Légal avant la mise en ligne.
- * Ils s'entendent hors frais officiels (greffe/INPI) et hors annonce légale.
+ * Les honoraires d'accompagnement ne sont pas réglementés : tant qu'ils ne sont pas
+ * fixés, le site affiche « sur devis » (HONORAIRES_PUBLIES = false). Les montants
+ * ci-dessous sont des valeurs de travail, jamais affichées dans ce cas.
  */
+
+export const HONORAIRES_PUBLIES = false
 
 export interface CategorieFormalite {
   slug: string
@@ -106,6 +112,17 @@ export const ETAPES_FORMALITE = [
   { titre: 'Nous déposons au guichet unique', texte: 'Le dossier part sur formalites.entreprises.gouv.fr, nous suivons chaque retour du greffe.' },
   { titre: 'Vous recevez le justificatif', texte: 'Kbis, extrait mis à jour ou accusé de dépôt, dès sa délivrance.' },
 ]
+
+/** Libellé du prix de l'accompagnement (honoraires ou « Sur devis »). */
+export function prixAccompagnement(f: Formalite): string {
+  return HONORAIRES_PUBLIES ? `${f.honoraires.toLocaleString('fr-FR')} € HT` : 'Sur devis'
+}
+
+/** Forfait officiel HT de l'annonce liée à la formalité, ou null (au caractère / sans annonce). */
+export function forfaitAnnonce(f: Formalite): number | null {
+  const t = f.annonce ? trouverType(f.annonce) : undefined
+  return t?.forfait ? FORFAITS[t.forfait].france : null
+}
 
 export function trouverFormalite(categorie: string, slug: string): Formalite | undefined {
   return FORMALITES.find((x) => x.categorie === categorie && x.slug === slug)

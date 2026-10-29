@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { FilAriane } from '@/components/FilAriane'
 import { FormulaireContact } from '@/components/FormulaireContact'
 import { trouverType } from '@/data/annonces'
-import { CATEGORIES_FORMALITES, ETAPES_FORMALITE, FORMALITES, trouverFormalite } from '@/data/formalites'
+import { CATEGORIES_FORMALITES, ETAPES_FORMALITE, FORMALITES, prixAccompagnement, trouverFormalite } from '@/data/formalites'
 import { FORFAITS } from '@/data/tarifs-annonces'
 import { euros } from '@/lib/prix'
 
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ categorie
   if (!f) return {}
   return {
     title: `${f.titre} : démarches, pièces et prix`,
-    description: `${f.resume} Dossier déposé au guichet unique par un formaliste, honoraires ${f.honoraires} € HT.`,
+    description: `${f.resume} Annonce légale au tarif officiel, dossier déposé au guichet unique par un formaliste.`,
     alternates: { canonical: `/formalites/${f.categorie}/${f.slug}` },
   }
 }
@@ -64,8 +64,8 @@ export default async function FicheFormalite({ params }: { params: Promise<{ cat
               <table>
                 <tbody>
                   <tr>
-                    <td>Honoraires Comptoir Légal</td>
-                    <td className="montant">{euros(f.honoraires)} HT</td>
+                    <td>Accompagnement Comptoir Légal</td>
+                    <td className="montant">{prixAccompagnement(f)}</td>
                   </tr>
                   {annonce && (
                     <tr>

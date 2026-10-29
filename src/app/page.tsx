@@ -180,7 +180,7 @@ export default function Accueil() {
                 Déléguer une formalité
               </Link>
               <Link href="/formalites/tarifs" className="btn btn-secondaire">
-                Nos honoraires
+                Tarifs des formalités
               </Link>
             </div>
           </div>

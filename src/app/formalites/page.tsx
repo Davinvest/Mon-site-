@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { BandeauCta } from '@/components/BandeauCta'
 import { Faq } from '@/components/Faq'
 import { FilAriane } from '@/components/FilAriane'
-import { CATEGORIES_FORMALITES, ETAPES_FORMALITE, FORMALITES } from '@/data/formalites'
+import { CATEGORIES_FORMALITES, ETAPES_FORMALITE, FORMALITES, forfaitAnnonce, prixAccompagnement } from '@/data/formalites'
 import { euros } from '@/lib/prix'
 
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ export default function Formalites() {
               Choisir ma formalité
             </a>
             <Link href="/formalites/tarifs" className="btn btn-secondaire">
-              Nos honoraires
+              Nos tarifs
             </Link>
           </div>
         </div>
@@ -61,7 +61,9 @@ export default function Formalites() {
                   <Link key={f.slug} href={`/formalites/${f.categorie}/${f.slug}`} className="carte carte-lien">
                     <strong>{f.titre}</strong>
                     <span className="petit muted">{f.resume}</span>
-                    <span className="prix">{euros(f.honoraires)} HT d’honoraires</span>
+                    <span className="prix">
+                      {forfaitAnnonce(f) !== null ? `Annonce ${euros(forfaitAnnonce(f) as number)} HT · ` : ''}accompagnement {prixAccompagnement(f).toLowerCase()}
+                    </span>
                   </Link>
                 ))}
               </div>
@@ -76,8 +78,8 @@ export default function Formalites() {
           <Faq
             questions={[
               {
-                q: 'Que comprennent vos honoraires ?',
-                r: 'La vérification des pièces, la préparation et le dépôt du dossier sur le guichet unique, le suivi des demandes de régularisation du greffe et la transmission du justificatif final. Les frais officiels (greffe, INPI) et l’annonce légale sont facturés en plus, à leur tarif réglementé, sans marge.',
+                q: 'Comment est fixé le prix d’une formalité ?',
+                r: 'L’annonce légale et les frais officiels (greffe, INPI) sont des tarifs réglementés, identiques partout en France : nous les refacturons sans marge. L’accompagnement (vérification des pièces, dépôt sur le guichet unique, suivi des demandes du greffe) fait l’objet d’un devis gratuit, envoyé avant tout engagement.',
               },
               {
                 q: 'Dois-je créer un compte sur le guichet unique ?',
