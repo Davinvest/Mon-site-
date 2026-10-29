@@ -3,6 +3,7 @@ import { BandeauCta } from '@/components/BandeauCta'
 import { Faq } from '@/components/Faq'
 import { TYPES_ANNONCE } from '@/data/annonces'
 import { DEPARTEMENTS } from '@/data/departements'
+import { PUBLICATION_INSTANTANEE, SITE } from '@/data/site'
 import { ANNEE_TARIFS } from '@/data/tarifs-annonces'
 import { prixAffiche } from '@/lib/prix'
 
@@ -38,6 +39,51 @@ const questions = [
   },
 ]
 
+/** Démonstration animée du parcours, de la saisie à l'attestation. */
+function Chrono() {
+  const etapes: [string, string][] = [
+    ['Formulaire complété', 'vous'],
+    ['Annonce rédigée, mentions vérifiées', 'instantané'],
+    ['Prix réglementé calculé', 'instantané'],
+    ['Validation par un formaliste', PUBLICATION_INSTANTANEE ? 'quelques secondes' : 'dans la journée'],
+    ['Publication dans le journal habilité', PUBLICATION_INSTANTANEE ? 'quelques secondes' : 'selon le journal'],
+    ['Attestation de parution', 'par e-mail'],
+  ]
+  return (
+    <div className="carte carte-ombre chrono" aria-label="Exemple de parcours d’une annonce">
+      <div className="chrono-tete">
+        <span className="surtitre" style={{ margin: 0 }}>
+          Exemple · Constitution de SAS
+        </span>
+        <span className="chrono-pastille">{SITE.nom}</span>
+      </div>
+      <div className="chrono-titre">
+        <span className="chrono-eclair" aria-hidden="true">
+          ⚡
+        </span>
+        <span>
+          <strong>Annonce prête</strong>
+          <span className="muted petit"> dès la dernière case remplie</span>
+        </span>
+      </div>
+      <ol className="chrono-etapes">
+        {etapes.map(([nom, duree], i) => (
+          <li key={nom} style={{ animationDelay: `${0.4 + i * 0.55}s` }}>
+            <span className="chrono-coche" aria-hidden="true">
+              ✓
+            </span>
+            <span className="chrono-nom">{nom}</span>
+            <span className="chrono-duree">{duree}</span>
+          </li>
+        ))}
+      </ol>
+      <div className="chrono-barre" aria-hidden="true">
+        <span />
+      </div>
+    </div>
+  )
+}
+
 export default function Accueil() {
   const populaires = TYPES_ANNONCE.filter((t) => t.populaire).slice(0, 8)
   return (
@@ -47,11 +93,12 @@ export default function Accueil() {
           <div>
             <span className="surtitre">Annonces légales · Formalités d’entreprise</span>
             <h1>
-              Votre annonce légale, <em>publiée au tarif réglementé</em>, sans rien payer de plus.
+              Le temps d’un clic, votre annonce légale est <em>{PUBLICATION_INSTANTANEE ? 'publiée' : 'rédigée'}</em>.
             </h1>
             <p className="chapo">
-              Choisissez votre acte, remplissez le formulaire, l’annonce se rédige sous vos yeux. Un formaliste la relit, nous la
-              transmettons au journal habilité de votre département et vous recevez l’attestation de parution.
+              Choisissez votre acte, remplissez le formulaire : l’annonce s’écrit instantanément, avec les seules mentions exigées, au
+              tarif fixé par l’État. Un formaliste la valide, le journal habilité de votre département la publie, vous recevez
+              l’attestation.
             </p>
             <div className="actions">
               <Link href="/tunnel" className="btn btn-primaire">
@@ -62,15 +109,21 @@ export default function Accueil() {
               </Link>
             </div>
             <ul className="puces-confiance">
+              <li>Annonce rédigée en un clic</li>
               <li>Tarif fixé par l’État</li>
               <li>Relecture par un formaliste</li>
-              <li>Paiement sécurisé</li>
             </ul>
           </div>
 
+          <Chrono />
+        </div>
+      </section>
+
+      <section className="section" style={{ paddingTop: 8 }}>
+        <div className="conteneur">
           <div className="carte carte-ombre">
             <p className="surtitre">Sélectionnez votre acte</p>
-            <div className="grille grille-2">
+            <div className="grille grille-3">
               {actes.map((a) => (
                 <Link key={a.slug} href={`/tunnel?type=${a.slug}`} className="carte carte-lien" style={{ padding: 16 }}>
                   <strong>{a.titre}</strong>

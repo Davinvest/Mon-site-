@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 export function BandeauCta({
-  titre = 'Votre annonce, publiée au juste prix.',
+  titre = 'Le temps d’un clic, votre annonce est prête.',
   texte = 'Pas d’abonnement, pas de frais de dossier : vous payez le tarif fixé par l’État, la rédaction et la relecture sont incluses.',
 }: {
   titre?: string

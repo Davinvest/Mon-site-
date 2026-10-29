@@ -6,7 +6,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: `${SITE.nom} — Annonces légales et formalités au tarif réglementé`, template: `%s | ${SITE.nom}` },
+  title: { default: `${SITE.nom} — ${SITE.slogan.replace(/\.$/, '')}`, template: `%s | ${SITE.nom}` },
   description: SITE.description,
   openGraph: { siteName: SITE.nom, locale: 'fr_FR', type: 'website' },
   alternates: { canonical: '/' },

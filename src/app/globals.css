@@ -1121,3 +1121,126 @@ textarea.apercu {
   background: var(--pied);
   color: #d6ddf0;
 }
+
+/* ---------- chrono (accueil) ---------- */
+
+.chrono {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chrono-tete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.chrono-pastille {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.chrono-titre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.1rem;
+}
+
+.chrono-eclair {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  font-size: 1.4rem;
+}
+
+.chrono-etapes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chrono-etapes li {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  opacity: 0;
+  transform: translateY(6px);
+  animation: chrono-apparait 0.45s ease-out forwards;
+}
+
+.chrono-etapes li:last-child {
+  border-bottom: 0;
+}
+
+.chrono-coche {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.chrono-duree {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.chrono-barre {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.chrono-barre span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--brand), var(--accent));
+  transform-origin: left;
+  animation: chrono-remplit 3.6s ease-out forwards;
+}
+
+@keyframes chrono-apparait {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes chrono-remplit {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chrono-etapes li,
+  .chrono-barre span {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
