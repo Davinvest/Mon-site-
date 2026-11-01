@@ -10,3 +10,10 @@ next-env.d.ts
 .vercel
 test-results/
 playwright-report/
+
+# Données personnelles de prospection : ne jamais publier (le dépôt est public)
+outils/tri-contacts/donnees/
+outils/tri-contacts/**/*.vcf
+outils/tri-contacts/**/*.csv
+outils/tri-contacts/**/*.xlsx
+__pycache__/
