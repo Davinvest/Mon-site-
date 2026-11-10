@@ -50,7 +50,7 @@ export const connecteurLgdf: Connecteur = {
     if (!id) throw new Error('API LGDF : identifiant de commande absent.')
     await appel(`/order/${encodeURIComponent(id)}/config`, {
       method: 'PATCH',
-      body: JSON.stringify({ departement: commande.departement }),
+      body: JSON.stringify({ departement: commande.departement, ...(commande.dateParution && { publicationDate: commande.dateParution }) }),
     })
     const payee = await appel<ReponseCommande>('/order/pay', {
       method: 'POST',

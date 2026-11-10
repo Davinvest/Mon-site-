@@ -1,9 +1,8 @@
 import Link from 'next/link'
-import { CATEGORIES, TYPES_ANNONCE } from '@/data/annonces'
+import { CATEGORIES } from '@/data/annonces'
 import { CATEGORIES_FORMALITES, FORMALITES } from '@/data/formalites'
+import { ANNEE_TARIFS } from '@/data/tarifs-annonces'
 import { Logo } from './Logo'
-
-const populaires = TYPES_ANNONCE.filter((t) => t.populaire)
 
 export function Entete() {
   return (
@@ -19,12 +18,12 @@ export function Entete() {
             <div className="mega">
               <div className="mega-intro">
                 <h3>Publier une annonce légale</h3>
-                <p className="petit muted">Journal habilité dans le département du siège, tarif réglementé 2026, relecture par un formaliste.</p>
+                <p className="petit muted">Journal habilité du département, tarif fixé par l’État, attestation de parution.</p>
                 <Link href="/tunnel" className="btn btn-primaire btn-bloc">
                   Publier mon annonce
                 </Link>
-                <p className="petit" style={{ marginTop: 12 }}>
-                  <Link href="/annonces-legales/tarifs">Tarifs 2026 des annonces légales</Link>
+                <p className="petit" style={{ margin: '12px 0 0' }}>
+                  <Link href="/annonces-legales/tarifs">Tarifs {ANNEE_TARIFS} des annonces légales</Link>
                 </p>
               </div>
               <div>
@@ -42,27 +41,25 @@ export function Entete() {
 
           <div className="nav-item">
             <Link href="/formalites" className="nav-lien">
-              Formalités <span aria-hidden="true">▾</span>
+              Guichet unique <span aria-hidden="true">▾</span>
             </Link>
             <div className="mega">
               <div className="mega-intro">
-                <h3>Déléguer une formalité</h3>
-                <p className="petit muted">Création, modification, cessation : un formaliste prépare et dépose votre dossier au guichet unique.</p>
+                <h3>Votre dossier INPI, déjà pré-rempli</h3>
+                <p className="petit muted">Déposez vos pièces : le brouillon se crée sur votre compte du guichet unique.</p>
                 <Link href="/formalites" className="btn btn-primaire btn-bloc">
-                  Voir les formalités
+                  Découvrir le service
                 </Link>
-                <p className="petit" style={{ marginTop: 12 }}>
-                  <Link href="/formalites/tarifs">Tarifs des formalités</Link>
+                <p className="petit" style={{ margin: '12px 0 0' }}>
+                  <Link href="/formalites/tarifs">Prix du brouillon, en jetons</Link>
                 </p>
               </div>
               <div className="mega-cols">
-                {CATEGORIES_FORMALITES.map((c) => (
+                {CATEGORIES_FORMALITES.slice(0, 2).map((c) => (
                   <div key={c.slug}>
-                    <p className="surtitre" style={{ marginBottom: 2 }}>
-                      {c.titre}
-                    </p>
+                    <p className="surtitre">{c.titre}</p>
                     {FORMALITES.filter((f) => f.categorie === c.slug)
-                      .slice(0, 4)
+                      .slice(0, 5)
                       .map((f) => (
                         <Link key={f.slug} href={`/formalites/${f.categorie}/${f.slug}`}>
                           {f.titre}
@@ -74,8 +71,8 @@ export function Entete() {
             </div>
           </div>
 
-          <Link href="/professionnels" className="nav-lien">
-            Professionnels
+          <Link href="/annonces-legales/tarifs" className="nav-lien">
+            Tarifs
           </Link>
           <Link href="/guides" className="nav-lien">
             Guides
@@ -86,6 +83,9 @@ export function Entete() {
         </nav>
 
         <div className="entete-actions">
+          <Link href="/connexion" className="btn btn-secondaire">
+            Se connecter
+          </Link>
           <Link href="/tunnel" className="btn btn-primaire">
             Publier une annonce
           </Link>
@@ -99,17 +99,12 @@ export function Entete() {
           </summary>
           <div className="menu-mobile-panneau">
             <Link href="/annonces-legales">Annonces légales</Link>
-            {populaires.slice(0, 4).map((t) => (
-              <Link key={t.slug} href={`/annonces-legales/${t.categorie}/${t.slug}`} style={{ paddingLeft: 18, fontWeight: 400 }}>
-                {t.titre}
-              </Link>
-            ))}
-            <Link href="/annonces-legales/tarifs">Tarifs des annonces</Link>
-            <Link href="/formalites">Formalités</Link>
-            <Link href="/formalites/tarifs">Honoraires formalités</Link>
-            <Link href="/professionnels">Professionnels (CRM, API)</Link>
+            <Link href="/formalites">Guichet unique</Link>
+            <Link href="/annonces-legales/tarifs">Tarifs</Link>
+            <Link href="/professionnels">Cabinets</Link>
             <Link href="/guides">Guides</Link>
             <Link href="/contact">Contact</Link>
+            <Link href="/connexion">Se connecter</Link>
             <Link href="/tunnel" className="btn btn-primaire btn-bloc">
               Publier une annonce
             </Link>

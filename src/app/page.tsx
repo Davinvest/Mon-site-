@@ -1,104 +1,73 @@
 import Link from 'next/link'
+import { Attestation } from '@/components/Attestation'
 import { BandeauCta } from '@/components/BandeauCta'
+import { Chrono } from '@/components/Chrono'
+import { CoupureJournal, titreAvis } from '@/components/CoupureJournal'
+import { Refs } from '@/components/EnTetePage'
 import { Faq } from '@/components/Faq'
 import { TYPES_ANNONCE } from '@/data/annonces'
 import { DEPARTEMENTS } from '@/data/departements'
-import { PUBLICATION_INSTANTANEE, SITE } from '@/data/site'
-import { ANNEE_TARIFS } from '@/data/tarifs-annonces'
-import { prixAffiche } from '@/lib/prix'
+import { saisieExemple } from '@/data/exemples'
+import { JETONS_BROUILLON, JETONS_PAR_ANNONCE } from '@/data/formalites'
+import { MODELES } from '@/data/modeles'
+import { PUBLICATION_INSTANTANEE, REFERENCES, SLOGANS } from '@/data/site'
+import { ANNEE_TARIFS, FORFAITS } from '@/data/tarifs-annonces'
+import { euros, normaliserTexte, prixAffiche } from '@/lib/prix'
+
+const ht = (cle: keyof typeof FORFAITS) => `${euros(FORFAITS[cle].france)} HT`
 
 const actes = [
-  { titre: 'Créer une société', slug: 'constitution-sas', detail: 'SAS, SASU, SARL, EURL, SCI…', prix: 'dès 124 € HT' },
-  { titre: 'Transférer le siège', slug: 'transfert-siege-meme-departement', detail: 'Même département ou non', prix: '109 € HT' },
-  { titre: 'Changer de dirigeant', slug: 'changement-dirigeant', detail: 'Gérant, président, DG', prix: '109 € HT' },
-  { titre: 'Modifier le capital', slug: 'modification-capital-social', detail: 'Augmentation ou réduction', prix: '136 € HT' },
-  { titre: 'Changer de dénomination', slug: 'changement-denomination', detail: 'Nouveau nom, nouveau sigle', prix: '199 € HT' },
-  { titre: 'Dissoudre, liquider', slug: 'dissolution-anticipee', detail: 'Dissolution puis clôture', prix: 'dès 111 € HT' },
+  { titre: 'Créer une société', slug: 'constitution-sas', detail: 'SAS, SASU, SARL, EURL, SCI…', prix: `dès ${ht('constitution-eurl')}` },
+  { titre: 'Transférer le siège', slug: 'transfert-siege-meme-departement', detail: 'Même département ou non', prix: ht('transfert-siege') },
+  { titre: 'Changer de dirigeant', slug: 'changement-dirigeant', detail: 'Gérant, président, directeur général', prix: ht('dirigeants') },
+  { titre: 'Modifier le capital', slug: 'modification-capital-social', detail: 'Augmentation ou réduction', prix: ht('capital-social') },
+  { titre: 'Changer de dénomination', slug: 'changement-denomination', detail: 'Nouveau nom, nouveau sigle', prix: ht('denomination') },
+  { titre: 'Dissoudre, liquider', slug: 'dissolution-anticipee', detail: 'Dissolution, puis clôture', prix: `dès ${ht('cloture-liquidation')}` },
 ]
 
 const questions = [
   {
-    q: 'Le prix est-il vraiment le même partout ?',
-    r: `Oui. Le prix d’une annonce légale est fixé chaque année par arrêté ministériel et s’impose à tous les journaux habilités. Pour ${ANNEE_TARIFS}, une constitution de SAS coûte 199 € HT partout en France (hors La Réunion et Mayotte). Comptoir Légal n’ajoute ni frais de dossier ni option payante.`,
+    q: 'Combien coûte une annonce légale ?',
+    r: `Le prix est fixé chaque année par arrêté ministériel et il est le même dans tous les journaux habilités. En ${ANNEE_TARIFS} : ${ht('constitution-sas')} pour la constitution d’une SAS, ${ht('constitution-sasu')} pour une SASU, ${ht('constitution-sarl')} pour une SARL, ${ht('constitution-eurl')} pour une EURL, ${ht('transfert-siege')} pour un transfert de siège ou un changement de dirigeant. Comptoir Légal n’ajoute aucun frais.`,
   },
   {
-    q: 'Dans quel journal mon annonce sera-t-elle publiée ?',
-    r: 'Dans un support habilité du département de votre siège social (ou du lieu du fonds, ou de votre domicile pour les annonces de particuliers). Il est choisi automatiquement à partir du code postal saisi.',
+    q: 'Qui rédige l’annonce ?',
+    r: 'Le formulaire, à partir de vos réponses : il impose les mentions obligatoires du type d’acte choisi. Vous relisez l’aperçu, vous pouvez l’ajuster, puis vous payez.',
+  },
+  {
+    q: 'Dans quel journal mon annonce paraît-elle ?',
+    r: 'Dans un journal habilité du département du siège social (ou du lieu du fonds, ou de votre domicile pour une annonce de particulier). Le département est déduit du code postal saisi.',
   },
   {
     q: 'Quand vais-je recevoir l’attestation de parution ?',
-    r: 'Après relecture par un formaliste et transmission au journal, l’attestation vous est envoyée par e-mail. C’est elle que vous joindrez à votre dossier sur le guichet unique de l’INPI.',
+    r: 'Elle est disponible dans votre espace et envoyée par e-mail. C’est la pièce que le guichet unique de l’INPI exige pour instruire votre formalité.',
   },
   {
-    q: 'Et si je me suis trompé dans l’annonce ?',
-    r: 'Tant que l’annonce n’est pas transmise, nous la corrigeons avec vous sans frais. Une fois parue, une erreur se corrige par un avis rectificatif, facturé au caractère : c’est pour l’éviter que chaque annonce est relue avant envoi.',
+    q: 'Comment fonctionne le guichet unique ?',
+    r: 'Vous déposez vos pièces en PDF. Un brouillon pré-rempli est créé sur votre compte INPI : vous le relisez, vous le signez et vous réglez les frais officiels sur le site de l’INPI. Rien n’est déposé sans vous.',
   },
   {
     q: 'Faut-il créer un compte ?',
-    r: 'Non. Vous choisissez votre annonce, la complétez, payez en ligne et recevez tout par e-mail.',
+    r: 'Pas pour publier une annonce : vous la rédigez, vous payez, vous recevez l’attestation par e-mail. Un compte sert à retrouver vos attestations, à gérer votre cabinet et à utiliser le guichet unique.',
   },
 ]
 
-/** Démonstration animée du parcours, de la saisie à l'attestation. */
-function Chrono() {
-  const etapes: [string, string][] = [
-    ['Formulaire complété', 'vous'],
-    ['Annonce rédigée, mentions vérifiées', 'instantané'],
-    ['Prix réglementé calculé', 'instantané'],
-    ['Validation par un formaliste', PUBLICATION_INSTANTANEE ? 'quelques secondes' : 'dans la journée'],
-    ['Publication dans le journal habilité', PUBLICATION_INSTANTANEE ? 'quelques secondes' : 'selon le journal'],
-    ['Attestation de parution', 'par e-mail'],
-  ]
-  return (
-    <div className="carte carte-ombre chrono" aria-label="Exemple de parcours d’une annonce">
-      <div className="chrono-tete">
-        <span className="surtitre" style={{ margin: 0 }}>
-          Exemple · Constitution de SAS
-        </span>
-        <span className="chrono-pastille">{SITE.nom}</span>
-      </div>
-      <div className="chrono-titre">
-        <span className="chrono-eclair" aria-hidden="true">
-          ⚡
-        </span>
-        <span>
-          <strong>Annonce prête</strong>
-          <span className="muted petit"> dès la dernière case remplie</span>
-        </span>
-      </div>
-      <ol className="chrono-etapes">
-        {etapes.map(([nom, duree], i) => (
-          <li key={nom} style={{ animationDelay: `${0.4 + i * 0.55}s` }}>
-            <span className="chrono-coche" aria-hidden="true">
-              ✓
-            </span>
-            <span className="chrono-nom">{nom}</span>
-            <span className="chrono-duree">{duree}</span>
-          </li>
-        ))}
-      </ol>
-      <div className="chrono-barre" aria-hidden="true">
-        <span />
-      </div>
-    </div>
-  )
-}
-
 export default function Accueil() {
   const populaires = TYPES_ANNONCE.filter((t) => t.populaire).slice(0, 8)
+  const exemple = normaliserTexte(MODELES.constitution.rediger(saisieExemple('SAS'), { forme: 'SAS' }))
+
   return (
     <>
       <section className="heros">
         <div className="conteneur heros-grille">
           <div>
-            <span className="surtitre">Annonces légales · Formalités d’entreprise</span>
+            <p className="surtitre">Annonces légales · Guichet unique INPI</p>
             <h1>
               Le temps d’un clic, votre annonce légale est <em>{PUBLICATION_INSTANTANEE ? 'publiée' : 'rédigée'}</em>.
             </h1>
             <p className="chapo">
-              Choisissez votre acte, remplissez le formulaire : l’annonce s’écrit instantanément, avec les seules mentions exigées, au
-              tarif fixé par l’État. Un formaliste la valide, le journal habilité de votre département la publie, vous recevez
-              l’attestation.
+              Vous remplissez un formulaire. L’annonce s’écrit sous vos yeux, part au journal habilité de votre département, et
+              l’attestation de parution vous revient. En quelques secondes, au tarif fixé par l’État.
             </p>
             <div className="actions">
               <Link href="/tunnel" className="btn btn-primaire">
@@ -109,91 +78,89 @@ export default function Accueil() {
               </Link>
             </div>
             <ul className="puces-confiance">
-              <li>Annonce rédigée en un clic</li>
+              <li>Sans abonnement</li>
               <li>Tarif fixé par l’État</li>
-              <li>Relecture par un formaliste</li>
+              <li>Attestation de parution comprise</li>
             </ul>
+            <Refs refs={[REFERENCES.loi1955, REFERENCES.arrete]} />
           </div>
 
           <Chrono />
         </div>
       </section>
 
-      <section className="section" style={{ paddingTop: 8 }}>
+      <section className="section" style={{ paddingTop: 0, paddingBottom: 56 }}>
         <div className="conteneur">
-          <div className="carte carte-ombre">
-            <p className="surtitre">Sélectionnez votre acte</p>
-            <div className="grille grille-3">
-              {actes.map((a) => (
-                <Link key={a.slug} href={`/tunnel?type=${a.slug}`} className="carte carte-lien" style={{ padding: 16 }}>
-                  <strong>{a.titre}</strong>
-                  <span className="petit muted">{a.detail}</span>
-                  <span className="prix">{a.prix}</span>
-                </Link>
-              ))}
-            </div>
-            <p className="petit muted" style={{ marginTop: 14, marginBottom: 0 }}>
-              Un autre acte ? Cession de fonds, location-gérance, transformation, rectificatif…{' '}
-              <Link href="/tunnel">Tous les types d’annonces</Link>
-            </p>
-          </div>
+          <ul className="reperes">
+            <li>
+              <strong>{TYPES_ANNONCE.length}</strong>
+              <span>types d’annonces légales, chacun avec son formulaire</span>
+            </li>
+            <li>
+              <strong>{Object.keys(DEPARTEMENTS).length}</strong>
+              <span>départements et collectivités couverts, outre-mer compris</span>
+            </li>
+            <li>
+              <strong>0 €</strong>
+              <span>de frais ajoutés au tarif fixé par l’État</span>
+            </li>
+            <li>
+              <strong>1</strong>
+              <span>seule saisie, du formulaire à l’attestation</span>
+            </li>
+          </ul>
         </div>
       </section>
 
       <section className="section section-alt">
         <div className="conteneur">
-          <span className="surtitre">Comment ça marche</span>
-          <h2>Cinq étapes, une seule saisie.</h2>
-          <ol className="etapes" style={{ marginTop: 28 }}>
-            <li>
-              <strong>Choisissez l’acte</strong>
-              <span className="muted">Il fixe les mentions obligatoires et le forfait applicable.</span>
-            </li>
-            <li>
-              <strong>Complétez le formulaire</strong>
-              <span className="muted">Le texte se rédige en direct, avec les seules mentions exigées.</span>
-            </li>
-            <li>
-              <strong>Vérifiez l’aperçu</strong>
-              <span className="muted">Le prix s’affiche selon le département du siège.</span>
-            </li>
-            <li>
-              <strong>Payez en ligne</strong>
-              <span className="muted">Carte bancaire, paiement sécurisé par Stripe.</span>
-            </li>
-            <li>
-              <strong>Recevez l’attestation</strong>
-              <span className="muted">Après relecture et parution, par e-mail.</span>
-            </li>
-          </ol>
+          <p className="surtitre">Sélectionnez votre acte</p>
+          <h2>
+            Quelle annonce devez-vous <em>publier</em> ?
+          </h2>
+          <div className="grille grille-3" style={{ marginTop: 28 }}>
+            {actes.map((a) => (
+              <Link key={a.slug} href={`/tunnel?type=${a.slug}`} className="carte carte-lien">
+                <strong>{a.titre}</strong>
+                <span className="petit muted">{a.detail}</span>
+                <span className="prix">{a.prix}</span>
+              </Link>
+            ))}
+          </div>
+          <p className="petit muted" style={{ marginTop: 16, marginBottom: 0 }}>
+            Un autre acte ? Cession de fonds, location-gérance, transformation, rectificatif…{' '}
+            <Link href="/tunnel">Voir les {TYPES_ANNONCE.length} types d’annonces</Link>
+          </p>
         </div>
       </section>
 
       <section className="section">
         <div className="conteneur">
-          <div className="grille grille-3">
-            <div>
-              <span className="surtitre">Le prix</span>
-              <h2>Le tarif de l’arrêté, rien d’autre.</h2>
-              <p className="muted">
-                Le prix d’une annonce légale est fixé par l’État et identique dans tous les journaux. Ce qui change d’un prestataire à
-                l’autre, ce sont les frais annexes : chez nous, la rédaction, la relecture et l’attestation sont incluses.
+          <p className="surtitre">Une seule saisie</p>
+          <h2>
+            Vous saisissez une fois. <em>Tout le reste suit.</em>
+          </h2>
+          <p className="chapo">Les informations de votre société ne se tapent qu’une fois. Chaque destinataire reçoit ensuite sa pièce.</p>
+          <div className="destinataires">
+            <div className="carte">
+              <span className="numero">01 · LE JOURNAL</span>
+              <h3>Votre annonce paraît</h3>
+              <p className="muted" style={{ margin: 0 }}>
+                Elle part au journal habilité du département du siège, au tarif réglementé. Vous choisissez la date de parution.
               </p>
             </div>
-            <div>
-              <span className="surtitre">La conformité</span>
-              <h2>Une relecture humaine avant parution.</h2>
-              <p className="muted">
-                Une mention oubliée ou un capital qui ne correspond pas aux statuts, et le greffe rejette le dossier. Un formaliste
-                vérifie chaque annonce avant de l’envoyer au journal.
+            <div className="carte">
+              <span className="numero">02 · L’ATTESTATION</span>
+              <h3>La preuve vous revient</h3>
+              <p className="muted" style={{ margin: 0 }}>
+                L’attestation de parution est rangée dans votre espace et envoyée par e-mail. Le guichet unique l’exige.
               </p>
             </div>
-            <div>
-              <span className="surtitre">La couverture</span>
-              <h2>Tous les départements, outre-mer compris.</h2>
-              <p className="muted">
-                {Object.keys(DEPARTEMENTS).length} départements et collectivités couverts. Le support habilité est sélectionné à partir
-                du code postal de votre siège.
+            <div className="carte">
+              <span className="numero">03 · L’INPI</span>
+              <h3>Le dossier se prépare</h3>
+              <p className="muted" style={{ margin: 0 }}>
+                Déposez vos pièces : le brouillon est pré-rempli sur votre compte du guichet unique. Vous relisez, vous signez.
               </p>
             </div>
           </div>
@@ -201,8 +168,131 @@ export default function Accueil() {
       </section>
 
       <section className="section section-alt">
+        <div className="conteneur duo">
+          <div>
+            <p className="surtitre">La preuve par le document</p>
+            <h2>
+              Votre annonce, <em>comme dans le journal</em>.
+            </h2>
+            <p className="muted">
+              Pendant que vous remplissez le formulaire, l’avis prend la forme exacte qu’il aura à la parution : les mentions exigées
+              par les textes, rien de plus. Sur une annonce facturée au caractère, chaque mot inutile se paie.
+            </p>
+            <ul className="liste-coches">
+              <li>Les mentions obligatoires de chaque type d’acte</li>
+              <li>Le prix officiel recalculé à chaque modification</li>
+              <li>L’attestation de parution, à joindre à votre dossier</li>
+            </ul>
+            <div className="actions">
+              <Link href="/tunnel?type=constitution-sas" className="btn btn-primaire">
+                Essayer avec une SAS
+              </Link>
+            </div>
+          </div>
+          <div className="pile-documents">
+            <CoupureJournal titre={titreAvis('constitution')} texte={exemple} lieu="Rhône (69)" penchee />
+            <Attestation />
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
         <div className="conteneur">
-          <span className="surtitre">Les plus demandées</span>
+          <p className="surtitre">Ce qui change</p>
+          <h2>
+            La formalité, <em>sans formalités</em>.
+          </h2>
+          <div className="comparatif" style={{ marginTop: 28 }}>
+            <div className="carte carte-avant">
+              <h3>Le parcours habituel</h3>
+              <ul className="liste-coches liste-croix">
+                <li>Chercher un journal habilité dans le bon département</li>
+                <li>Rédiger l’annonce à la main, mention par mention</li>
+                <li>Découvrir le prix au moment de payer</li>
+                <li>Attendre l’attestation pour avancer le dossier</li>
+                <li>Ressaisir les mêmes informations au guichet unique</li>
+              </ul>
+            </div>
+            <div className="carte carte-avec">
+              <h3>Avec Comptoir Légal</h3>
+              <ul className="liste-coches">
+                <li>Le journal habilité est trouvé d’après le siège</li>
+                <li>L’annonce s’écrit pendant que vous remplissez le formulaire</li>
+                <li>Le prix officiel s’affiche avant le paiement</li>
+                <li>L’attestation arrive dans votre espace et par e-mail</li>
+                <li>Vos pièces pré-remplissent le brouillon INPI</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section section-alt">
+        <div className="conteneur duo">
+          <div>
+            <p className="surtitre">Cabinets d’expertise comptable, d’avocats, formalistes</p>
+            <h2>{SLOGANS.cabinets}</h2>
+            <ul className="liste-coches">
+              <li>Plusieurs cabinets dans un seul espace, chacun avec ses commandes</li>
+              <li>Vos collègues invités pour commander avec vous</li>
+              <li>Un lien de paiement à envoyer à votre client</li>
+              <li>
+                Chaque annonce publiée crédite {JETONS_PAR_ANNONCE} jetons, qui règlent vos brouillons au guichet unique
+              </li>
+            </ul>
+            <div className="actions">
+              <Link href="/professionnels" className="btn btn-secondaire">
+                L’offre pour les cabinets
+              </Link>
+            </div>
+          </div>
+          <div className="carte carte-ombre recap">
+            <p className="surtitre">Exemple · Portefeuille d’un cabinet</p>
+            <dl>
+              <dt>Annonce de constitution publiée</dt>
+              <dd>+ {JETONS_PAR_ANNONCE} jetons</dd>
+              <dt>Brouillon INPI de création</dt>
+              <dd>− {JETONS_BROUILLON.creation} jetons</dd>
+              <dt className="total">Solde</dt>
+              <dd className="total">{JETONS_PAR_ANNONCE - (JETONS_BROUILLON.creation ?? 0)} jetons</dd>
+            </dl>
+            <p className="petit muted" style={{ margin: '14px 0 0' }}>
+              Les jetons ne s’achètent pas : ils se gagnent en publiant.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section bloc-nuit">
+        <div className="conteneur">
+          <p className="surtitre">Sécurité et confidentialité</p>
+          <h2>Vos données, traitées avec le même sérieux que vos actes.</h2>
+          <div className="grille grille-4" style={{ marginTop: 28 }}>
+            <div className="carte">
+              <h3>Paiement chez Stripe</h3>
+              <p style={{ margin: 0 }}>La carte est saisie sur les pages de Stripe, jamais sur ce site.</p>
+            </div>
+            <div className="carte">
+              <h3>Identifiants INPI chiffrés</h3>
+              <p style={{ margin: 0 }}>Enregistrés chiffrés, jamais réaffichés, supprimables à tout moment.</p>
+            </div>
+            <div className="carte">
+              <h3>Pièces effacées</h3>
+              <p style={{ margin: 0 }}>Vos documents sont supprimés automatiquement 30 jours après leur envoi.</p>
+            </div>
+            <div className="carte">
+              <h3>Ni revente ni publicité</h3>
+              <p style={{ margin: 0 }}>
+                Vos données servent à vos démarches, à rien d’autre. <Link href="/confidentialite">En savoir plus</Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="conteneur">
+          <p className="surtitre">Les plus demandées</p>
           <h2>Annonces légales courantes</h2>
           <div className="grille grille-4" style={{ marginTop: 24 }}>
             {populaires.map((t) => (
@@ -213,45 +303,12 @@ export default function Accueil() {
               </Link>
             ))}
           </div>
-          <p style={{ marginTop: 20 }}>
-            <Link href="/annonces-legales">Voir les {TYPES_ANNONCE.length} types d’annonces →</Link>
-          </p>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="conteneur grille grille-2" style={{ alignItems: 'center', gap: 40 }}>
-          <div>
-            <span className="surtitre">Formalités</span>
-            <h2>L’annonce, puis le guichet unique : nous pouvons tout faire.</h2>
-            <p className="muted">
-              Création, transfert de siège, changement de dirigeant, dissolution : nos formalistes préparent le dossier, publient
-              l’annonce et le déposent sur le guichet unique de l’INPI. Vous suivez l’avancement par e-mail jusqu’au Kbis.
-            </p>
-            <div className="actions">
-              <Link href="/formalites" className="btn btn-primaire">
-                Déléguer une formalité
-              </Link>
-              <Link href="/formalites/tarifs" className="btn btn-secondaire">
-                Tarifs des formalités
-              </Link>
-            </div>
-          </div>
-          <div className="carte">
-            <span className="surtitre">Professionnels du droit et du chiffre</span>
-            <h3>Experts-comptables, avocats, formalistes</h3>
-            <p className="muted">
-              Un volume régulier d’annonces ? Facturation mensuelle, interlocuteur dédié, et bientôt un espace de suivi et une API pour
-              publier depuis votre logiciel.
-            </p>
-            <Link href="/professionnels">Découvrir l’offre professionnels →</Link>
-          </div>
         </div>
       </section>
 
       <section className="section section-alt">
-        <div className="conteneur" style={{ maxWidth: 860 }}>
-          <span className="surtitre">Questions fréquentes</span>
+        <div className="conteneur section-etroite">
+          <p className="surtitre">Questions fréquentes</p>
           <h2>Ce qu’on nous demande le plus souvent</h2>
           <Faq questions={questions} />
         </div>

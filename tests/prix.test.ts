@@ -113,12 +113,35 @@ describe('métadonnées Stripe', () => {
     const client = { prenom: 'P'.repeat(80), nom: 'N'.repeat(80), email: `${'e'.repeat(150)}@x.fr`, telephone: '0'.repeat(30), societe: 'S'.repeat(160) }
     const meta = versMetadonnees({
       reference: 'CL-20261029-ABCDEF', typeSlug: 'constitution-sas', typeTitre: 'Constitution SAS', codePostal: '75002',
-      departement: '75', texte, client, prix: calculerPrix(type('constitution-sas'), '75', texte), journal: 'J', creeLe: '2026-10-29T00:00:00Z',
+      departement: '75', texte, client, prix: calculerPrix(type('constitution-sas'), '75', texte), journal: 'J',
+      dateParution: '2026-11-20', creeLe: '2026-10-29T00:00:00Z',
     })
     expect(Object.keys(meta).length).toBeLessThanOrEqual(50)
     for (const v of Object.values(meta)) expect(v.length).toBeLessThanOrEqual(500)
     const retour = depuisMetadonnees(meta)
     expect(retour.texte).toBe(texte)
     expect(retour.client).toEqual(client)
+    expect(retour.dateParution).toBe('2026-11-20')
+  })
+})
+
+describe('date de parution souhaitée', () => {
+  const maintenant = new Date('2026-11-10T10:00:00Z')
+
+  it('accepte une date vide (dès que possible), aujourd’hui et la limite de 90 jours', async () => {
+    const { validerDateParution } = await import('@/lib/commande')
+    expect(validerDateParution(undefined, maintenant)).toBe('')
+    expect(validerDateParution('', maintenant)).toBe('')
+    expect(validerDateParution('2026-11-10', maintenant)).toBe('2026-11-10')
+    expect(validerDateParution('2027-02-08', maintenant)).toBe('2027-02-08')
+  })
+
+  it('refuse une date passée, trop lointaine ou mal formée', async () => {
+    const { validerDateParution } = await import('@/lib/commande')
+    expect(validerDateParution('2026-11-09', maintenant)).toBeNull()
+    expect(validerDateParution('2027-02-09', maintenant)).toBeNull()
+    expect(validerDateParution('2026-02-30', maintenant)).toBeNull()
+    expect(validerDateParution('10/12/2026', maintenant)).toBeNull()
+    expect(validerDateParution(20261120, maintenant)).toBeNull()
   })
 })

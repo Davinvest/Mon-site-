@@ -24,6 +24,7 @@ export function versMetadonnees(c: Commande): Record<string, string> {
     reference: c.reference,
     typeSlug: c.typeSlug,
     codePostal: c.codePostal,
+    dateParution: c.dateParution,
     creeLe: c.creeLe,
     clientPrenom: c.client.prenom,
     clientNom: c.client.nom,
@@ -41,6 +42,7 @@ export interface CommandeStripe {
   reference: string
   typeSlug: string
   codePostal: string
+  dateParution: string
   creeLe: string
   client: Commande['client']
   texte: string
@@ -54,6 +56,7 @@ export function depuisMetadonnees(meta: Record<string, string>): CommandeStripe 
     reference: meta.reference,
     typeSlug: meta.typeSlug,
     codePostal: meta.codePostal,
+    dateParution: meta.dateParution ?? '',
     creeLe: meta.creeLe,
     client: {
       prenom: meta.clientPrenom ?? '',

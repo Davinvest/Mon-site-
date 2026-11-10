@@ -2,16 +2,18 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
+import { CoupureJournal, titreAvis } from '@/components/CoupureJournal'
 import { CATEGORIES, TYPES_ANNONCE, trouverType } from '@/data/annonces'
 import type { TypeAnnonce } from '@/data/annonces'
 import { DEPARTEMENTS, departementDuCodePostal } from '@/data/departements'
 import { MODELES } from '@/data/modeles'
 import type { Modele, Saisie } from '@/data/modeles'
+import { bornesParution } from '@/lib/commande'
 import { calculerPrix, euros, normaliserTexte, prixAffiche } from '@/lib/prix'
 import { ChampFormulaire } from './ChampFormulaire'
 
-const ETAPES = ['Démarche', 'Type', 'Documents', 'Vérification', 'Paiement']
-const CLE_BROUILLON = 'comptoirlegal-brouillon-v1'
+const ETAPES = ['Démarche', 'Type', 'Rédaction', 'Parution', 'Paiement']
+const CLE_BROUILLON = 'comptoirlegal-brouillon-v2'
 const FILTRES = ['Tous', ...Array.from(new Set(CATEGORIES.map((c) => c.filtre)))]
 
 interface Client {
@@ -26,6 +28,7 @@ interface Brouillon {
   typeSlug: string
   saisie: Saisie
   texteEdite: string | null
+  dateParution: string
   client: Client
 }
 
@@ -54,12 +57,17 @@ function lireBrouillon(): Brouillon | null {
   }
 }
 
+function dateLisible(iso: string): string {
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+}
+
 export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?: boolean }) {
   const typeDepart = typeInitial ? trouverType(typeInitial) : undefined
   const [etape, setEtape] = useState(typeDepart ? 3 : 1)
   const [typeSlug, setTypeSlug] = useState(typeDepart?.slug ?? '')
   const [saisie, setSaisie] = useState<Saisie>(() => saisieInitiale(typeDepart, typeDepart && MODELES[typeDepart.modele]))
   const [texteEdite, setTexteEdite] = useState<string | null>(null)
+  const [dateParution, setDateParution] = useState('')
   const [client, setClient] = useState<Client>(CLIENT_VIDE)
   const [recherche, setRecherche] = useState('')
   const [filtre, setFiltre] = useState('Tous')
@@ -80,18 +88,19 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
     setTypeSlug(b.typeSlug)
     setSaisie(b.saisie)
     setTexteEdite(b.texteEdite)
+    setDateParution(b.dateParution ?? '')
     setClient({ ...CLIENT_VIDE, ...b.client })
-    if (!typeDepart && b.typeSlug) setEtape(4)
+    if (!typeDepart && b.typeSlug) setEtape(3)
   }, [typeDepart])
 
   useEffect(() => {
     if (!brouillonCharge || !typeSlug) return
     try {
-      localStorage.setItem(CLE_BROUILLON, JSON.stringify({ typeSlug, saisie, texteEdite, client } satisfies Brouillon))
+      localStorage.setItem(CLE_BROUILLON, JSON.stringify({ typeSlug, saisie, texteEdite, dateParution, client } satisfies Brouillon))
     } catch {
-      // stockage indisponible : le tunnel fonctionne sans brouillon
+      // stockage indisponible : le parcours fonctionne sans brouillon
     }
-  }, [brouillonCharge, typeSlug, saisie, texteEdite, client])
+  }, [brouillonCharge, typeSlug, saisie, texteEdite, dateParution, client])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -108,6 +117,7 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
   const codePostal = type && modele ? (saisie.champs[champCodePostal(type, modele)] ?? '').trim() : ''
   const departement = departementDuCodePostal(codePostal)
   const prix = type && departement ? calculerPrix(type, departement, texte) : null
+  const lieu = departement ? `${DEPARTEMENTS[departement]} (${departement})` : 'Journal habilité'
 
   const typesFiltres = useMemo(() => {
     const q = recherche.trim().toLowerCase()
@@ -124,6 +134,7 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
       setTexteEdite(null)
     }
     setTypeSlug(t.slug)
+    setErreurs([])
     setEtape(3)
   }
 
@@ -161,10 +172,10 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
     return manquants
   }
 
-  function versPaiement() {
+  function versParution() {
     const manquants = verifierSaisie()
     setErreurs(manquants)
-    if (manquants.length === 0) setEtape(5)
+    if (manquants.length === 0) setEtape(4)
   }
 
   async function payer() {
@@ -175,7 +186,7 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
       const r = await fetch('/api/commande', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ typeSlug: type.slug, codePostal, texte, client, accepteCgv, accepteExecution }),
+        body: JSON.stringify({ typeSlug: type.slug, codePostal, texte, dateParution, client, accepteCgv, accepteExecution }),
       })
       const corps = await r.json()
       if (!r.ok || !corps.url) throw new Error(corps.erreur || 'Paiement indisponible.')
@@ -190,6 +201,39 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
   }
 
   const clientValide = client.prenom.trim() && client.nom.trim() && /\S+@\S+\.\S+/.test(client.email)
+  const bornes = bornesParution()
+
+  const recapitulatif = type && prix && departement && (
+    <div className="carte carte-ombre recap">
+      <p className="surtitre">Récapitulatif</p>
+      <dl>
+        <dt>Annonce</dt>
+        <dd>{type.titre}</dd>
+        <dt>Département</dt>
+        <dd>{lieu}</dd>
+        <dt>Parution</dt>
+        <dd>{dateParution ? dateLisible(dateParution) : 'Dès que possible'}</dd>
+        <dt>Tarification</dt>
+        <dd>{prix.mode === 'forfait' ? 'Forfait réglementé' : `${prix.caracteres} caractères`}</dd>
+        <dt>Attestation de parution</dt>
+        <dd>Comprise</dd>
+        <dt>Montant HT</dt>
+        <dd>{euros(prix.ht)}</dd>
+        <dt>TVA 20 %</dt>
+        <dd>{euros(prix.tva)}</dd>
+        <dt className="total">Total TTC</dt>
+        <dd className="total">{euros(prix.ttc)}</dd>
+      </dl>
+      <details style={{ marginTop: 14 }}>
+        <summary className="petit" style={{ cursor: 'pointer' }}>
+          Relire l’avis
+        </summary>
+        <div style={{ marginTop: 10 }}>
+          <CoupureJournal titre={titreAvis(type.modele)} texte={texte} lieu={lieu} />
+        </div>
+      </details>
+    </div>
+  )
 
   return (
     <div className="tunnel conteneur">
@@ -217,18 +261,20 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
       {etape === 1 && (
         <section>
           <p className="surtitre">Étape 1 sur 5</p>
-          <h1>Que souhaitez-vous faire ?</h1>
-          <p className="chapo">Les étapes suivantes s’adaptent à votre démarche.</p>
+          <h1>
+            Vous saisissez une fois. <em>Tout le reste suit.</em>
+          </h1>
+          <p className="chapo">Dites-nous ce que vous voulez faire : la suite s’adapte.</p>
           <div className="grille grille-2" style={{ marginTop: 24 }}>
             <button type="button" className="carte carte-lien choix-type" onClick={() => setEtape(2)}>
               <span className="badge">Sans compte · paiement en ligne</span>
-              <h2 style={{ fontSize: '1.4rem', margin: '8px 0 4px' }}>Publier une annonce légale</h2>
-              <span className="muted">Constitution, modification, dissolution, cession… Journal habilité du département, tarif réglementé.</span>
+              <strong style={{ fontSize: '1.4rem', marginTop: 6 }}>Publier une annonce légale</strong>
+              <span className="muted">Constitution, modification, dissolution, cession… Journal habilité du département, au tarif fixé par l’État.</span>
             </button>
             <Link href="/formalites" className="carte carte-lien">
-              <span className="badge badge-accent">Avec un formaliste</span>
-              <h2 style={{ fontSize: '1.4rem', margin: '8px 0 4px' }}>Déposer une formalité</h2>
-              <span className="muted">Création, modification ou cessation au guichet unique : nous préparons et déposons le dossier pour vous.</span>
+              <span className="badge badge-accent">Avec votre compte INPI</span>
+              <strong style={{ fontSize: '1.4rem', marginTop: 6 }}>Préparer une formalité au guichet unique</strong>
+              <span className="muted">Déposez vos pièces : le brouillon est pré-rempli sur votre compte INPI. Vous relisez et vous signez.</span>
             </Link>
           </div>
         </section>
@@ -237,7 +283,7 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
       {etape === 2 && (
         <section>
           <p className="surtitre">Étape 2 sur 5</p>
-          <h1>Quel type d’annonce légale ?</h1>
+          <h1>Quelle annonce devez-vous publier ?</h1>
           <div className="champ" style={{ maxWidth: 520, marginTop: 16 }}>
             <label htmlFor="recherche-type" className="sr-only">
               Rechercher un type d’annonce
@@ -271,7 +317,7 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
               </button>
             ))}
           </div>
-          {typesFiltres.length === 0 && <p className="muted">Aucun résultat. Essayez un autre mot ou écrivez-nous.</p>}
+          {typesFiltres.length === 0 && <p className="muted">Aucun résultat. Essayez un autre mot, ou écrivez-nous.</p>}
           <div className="actions">
             <button type="button" className="btn btn-secondaire" onClick={() => setEtape(1)}>
               ← Retour
@@ -280,45 +326,23 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
         </section>
       )}
 
-      {etape === 3 && type && (
-        <section style={{ maxWidth: 720 }}>
-          <p className="surtitre">Étape 3 sur 5</p>
-          <h1>Vos documents</h1>
-          <p className="chapo">
-            Gardez sous la main vos statuts signés ou le procès-verbal de la décision : l’annonce doit reprendre exactement leurs mentions.
-          </p>
-          <div className="depot" style={{ margin: '24px 0' }}>
-            <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
-            </svg>
-            <strong>Lecture automatique de vos statuts</strong>
-            <span className="petit">Bientôt disponible : déposez votre PDF et l’annonce se remplit seule.</span>
-          </div>
-          <p>En attendant, le formulaire suivant prend quelques minutes. Chaque annonce est relue par un formaliste avant sa transmission au journal.</p>
-          <div className="actions">
-            <button type="button" className="btn btn-secondaire" onClick={() => setEtape(2)}>
-              ← Retour
-            </button>
-            <button type="button" className="btn btn-primaire" onClick={() => setEtape(4)}>
-              Remplir le formulaire
-            </button>
-          </div>
-        </section>
-      )}
-
-      {etape === 4 && type && modele && (
+      {etape === 3 && type && modele && (
         <section>
-          <p className="surtitre">Étape 4 sur 5</p>
-          <h1>Vérifiez et complétez</h1>
-          <p className="chapo">Le formulaire à gauche, l’aperçu de l’annonce à droite. Vous pourrez ajuster le texte avant de payer.</p>
+          <p className="surtitre">Étape 3 sur 5</p>
+          <h1>
+            Remplissez. <em>L’avis s’écrit tout seul.</em>
+          </h1>
+          <p className="chapo">
+            Gardez vos statuts ou votre procès-verbal sous la main : l’annonce doit reprendre exactement leurs mentions.
+          </p>
 
           <div className="tunnel-verif" style={{ marginTop: 24 }}>
             <div>
               {texteEdite !== null && (
                 <p className="alerte alerte-info">
-                  Vous modifiez le texte directement : le formulaire ne met plus l’aperçu à jour.{' '}
+                  Vous modifiez le texte directement : le formulaire ne met plus l’avis à jour.{' '}
                   <button type="button" className="filtre" onClick={() => setTexteEdite(null)}>
-                    Revenir au texte généré
+                    Revenir au texte du formulaire
                   </button>
                 </p>
               )}
@@ -376,46 +400,40 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
             </div>
 
             <aside className="colle">
-              <div className="carte carte-ombre">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                  <h2 style={{ fontSize: '1.15rem', margin: 0 }}>Aperçu de l’annonce</h2>
-                  {texteEdite === null && (
-                    <button type="button" className="filtre" onClick={() => setTexteEdite(texteGenere)}>
-                      Modifier le texte
-                    </button>
-                  )}
-                </div>
-                {texteEdite === null ? (
-                  <div className="apercu" style={{ marginTop: 12 }} aria-live="polite">
-                    {texteGenere || 'Le texte apparaît ici au fur et à mesure de votre saisie.'}
-                  </div>
-                ) : (
-                  <textarea
-                    className="apercu"
-                    style={{ marginTop: 12 }}
-                    aria-label="Texte de l’annonce"
-                    value={texteEdite}
-                    onChange={(e) => setTexteEdite(e.target.value)}
-                  />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <p className="surtitre" style={{ margin: 0 }}>
+                  L’avis, tel qu’il paraîtra
+                </p>
+                {texteEdite === null && (
+                  <button type="button" className="filtre" onClick={() => setTexteEdite(texteGenere)}>
+                    Modifier le texte
+                  </button>
                 )}
-                <div className="recap" style={{ marginTop: 16 }}>
-                  <dl>
-                    <dt>Département</dt>
-                    <dd>{departement ? `${departement} · ${DEPARTEMENTS[departement]}` : 'selon le code postal'}</dd>
-                    {prix?.mode === 'caractere' && (
-                      <>
-                        <dt>Longueur</dt>
-                        <dd>
-                          {prix.caracteres} car. × {prix.tarifCaractere?.toLocaleString('fr-FR')} €
-                        </dd>
-                      </>
-                    )}
-                    <dt>Prix HT</dt>
-                    <dd>{prix ? euros(prix.ht) : prixAffiche(type)}</dd>
-                    <dt className="total">Total TTC</dt>
-                    <dd className="total">{prix ? euros(prix.ttc) : '—'}</dd>
-                  </dl>
+              </div>
+              {texteEdite === null ? (
+                <div aria-live="polite">
+                  <CoupureJournal titre={titreAvis(type.modele)} texte={texteGenere} lieu={lieu} />
                 </div>
+              ) : (
+                <textarea className="apercu" aria-label="Texte de l’annonce" value={texteEdite} onChange={(e) => setTexteEdite(e.target.value)} />
+              )}
+              <div className="carte recap" style={{ marginTop: 16 }}>
+                <dl>
+                  <dt>Département</dt>
+                  <dd>{departement ? lieu : 'selon le code postal'}</dd>
+                  {prix?.mode === 'caractere' && (
+                    <>
+                      <dt>Longueur</dt>
+                      <dd>
+                        {prix.caracteres} car. × {prix.tarifCaractere?.toLocaleString('fr-FR')} €
+                      </dd>
+                    </>
+                  )}
+                  <dt>Prix HT</dt>
+                  <dd>{prix ? euros(prix.ht) : prixAffiche(type)}</dd>
+                  <dt className="total">Total TTC</dt>
+                  <dd className="total">{prix ? euros(prix.ttc) : '—'}</dd>
+                </dl>
                 {erreurs.length > 0 && (
                   <div className="alerte alerte-erreur" role="alert">
                     À compléter :
@@ -427,10 +445,10 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
                   </div>
                 )}
                 <div className="actions" style={{ marginTop: 16 }}>
-                  <button type="button" className="btn btn-secondaire" onClick={() => setEtape(3)}>
+                  <button type="button" className="btn btn-secondaire" onClick={() => setEtape(2)}>
                     ← Retour
                   </button>
-                  <button type="button" className="btn btn-primaire" onClick={versPaiement}>
+                  <button type="button" className="btn btn-primaire" onClick={versParution}>
                     Continuer
                   </button>
                 </div>
@@ -440,11 +458,58 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
         </section>
       )}
 
+      {etape === 4 && type && prix && departement && (
+        <section className="tunnel-verif">
+          <div>
+            <p className="surtitre">Étape 4 sur 5</p>
+            <h1>
+              Le bon journal, <em>à la date que vous choisissez</em>.
+            </h1>
+            <fieldset className="groupe-form" style={{ marginTop: 16 }}>
+              <legend>Le journal</legend>
+              <p style={{ margin: 0 }}>
+                <strong>Journal habilité · {lieu}</strong>
+              </p>
+              <p className="petit muted" style={{ margin: '6px 0 0' }}>
+                L’habilitation à publier des annonces légales est accordée par département. Le vôtre est déduit du code postal {codePostal}{' '}
+                figurant dans l’annonce : le support est sélectionné en conséquence.
+              </p>
+            </fieldset>
+            <fieldset className="groupe-form">
+              <legend>La date de parution</legend>
+              <div className="champ" style={{ maxWidth: 280 }}>
+                <label htmlFor="date-parution">Date souhaitée (facultatif)</label>
+                <input
+                  id="date-parution"
+                  type="date"
+                  min={bornes.min}
+                  max={bornes.max}
+                  value={dateParution}
+                  onChange={(e) => setDateParution(e.target.value)}
+                />
+                <span className="aide">Laissez vide : votre annonce paraît dès que possible.</span>
+              </div>
+            </fieldset>
+            <div className="actions">
+              <button type="button" className="btn btn-secondaire" onClick={() => setEtape(3)}>
+                ← Modifier l’annonce
+              </button>
+              <button type="button" className="btn btn-primaire" onClick={() => setEtape(5)}>
+                Continuer vers le paiement
+              </button>
+            </div>
+          </div>
+          <aside className="colle">{recapitulatif}</aside>
+        </section>
+      )}
+
       {etape === 5 && type && prix && departement && (
         <section className="tunnel-verif">
           <div>
             <p className="surtitre">Étape 5 sur 5</p>
-            <h1>Coordonnées et paiement</h1>
+            <h1>
+              Un paiement, <em>et c’est parti</em>.
+            </h1>
             <fieldset className="groupe-form" style={{ marginTop: 16 }}>
               <legend>Vos coordonnées</legend>
               <div className="grille-champs">
@@ -491,7 +556,7 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
             )}
             <div className="actions">
               <button type="button" className="btn btn-secondaire" onClick={() => setEtape(4)}>
-                ← Modifier l’annonce
+                ← Retour
               </button>
               <button type="button" className="btn btn-primaire" disabled={!clientValide || !accepteCgv || !accepteExecution || envoi} onClick={payer}>
                 {envoi ? 'Redirection…' : `Payer ${euros(prix.ttc)} TTC`}
@@ -501,40 +566,7 @@ export function Tunnel({ typeInitial, annule }: { typeInitial?: string; annule?:
               Paiement sécurisé par Stripe. Vos coordonnées bancaires ne transitent jamais par nos serveurs.
             </p>
           </div>
-
-          <aside className="colle">
-            <div className="carte carte-ombre recap">
-              <h2 style={{ fontSize: '1.15rem' }}>Récapitulatif</h2>
-              <dl>
-                <dt>Annonce</dt>
-                <dd>{type.titre}</dd>
-                <dt>Département</dt>
-                <dd>
-                  {departement} · {DEPARTEMENTS[departement]}
-                </dd>
-                <dt>Tarification</dt>
-                <dd>{prix.mode === 'forfait' ? 'Forfait réglementé' : `${prix.caracteres} caractères`}</dd>
-                <dt>Rédaction et relecture</dt>
-                <dd>Incluses</dd>
-                <dt>Attestation de parution</dt>
-                <dd>Incluse</dd>
-                <dt>Montant HT</dt>
-                <dd>{euros(prix.ht)}</dd>
-                <dt>TVA 20 %</dt>
-                <dd>{euros(prix.tva)}</dd>
-                <dt className="total">Total TTC</dt>
-                <dd className="total">{euros(prix.ttc)}</dd>
-              </dl>
-              <details style={{ marginTop: 14 }}>
-                <summary className="petit" style={{ cursor: 'pointer' }}>
-                  Voir le texte de l’annonce
-                </summary>
-                <div className="apercu" style={{ marginTop: 10, minHeight: 0 }}>
-                  {texte}
-                </div>
-              </details>
-            </div>
-          </aside>
+          <aside className="colle">{recapitulatif}</aside>
         </section>
       )}
     </div>

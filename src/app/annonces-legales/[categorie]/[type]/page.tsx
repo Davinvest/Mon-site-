@@ -2,12 +2,14 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { BandeauCta } from '@/components/BandeauCta'
+import { CoupureJournal, titreAvis } from '@/components/CoupureJournal'
+import { EnTetePage } from '@/components/EnTetePage'
 import { Faq } from '@/components/Faq'
-import { FilAriane } from '@/components/FilAriane'
 import { TYPES_ANNONCE, trouverCategorie, trouverType } from '@/data/annonces'
 import { saisieExemple } from '@/data/exemples'
 import { FORMALITES } from '@/data/formalites'
 import { MODELES } from '@/data/modeles'
+import { REFERENCES, SLOGANS } from '@/data/site'
 import { ANNEE_TARIFS, FORFAITS, TARIF_CARACTERE } from '@/data/tarifs-annonces'
 import { calculerPrix, euros, normaliserTexte } from '@/lib/prix'
 
@@ -46,25 +48,39 @@ export default async function FicheAnnonce({ params }: { params: Promise<{ categ
   const forfait = t.forfait ? FORFAITS[t.forfait] : null
   const formalite = FORMALITES.find((f) => f.annonce === t.slug)
   const voisins = TYPES_ANNONCE.filter((x) => x.categorie === c.slug && x.slug !== t.slug).slice(0, 6)
+  const lieuPublication =
+    t.modele === 'cession-fonds' || t.modele === 'location-gerance' || t.modele === 'droit-au-bail'
+      ? 'Dans le département où se situe le fonds ou les locaux.'
+      : t.categorie === 'personnes-physiques'
+        ? 'Dans le département de votre domicile.'
+        : t.variante === 'nouveau-siege'
+          ? 'Dans le département du nouveau siège social.'
+          : 'Dans le département du siège social de la société.'
 
   return (
     <>
-      <section className="heros" style={{ paddingBottom: 24 }}>
-        <div className="conteneur">
-          <FilAriane
-            elements={[
-              { nom: 'Annonces légales', href: '/annonces-legales' },
-              { nom: c.titre, href: `/annonces-legales/${c.slug}` },
-              { nom: t.titre },
-            ]}
-          />
-          <span className="surtitre">{c.titre}</span>
-          <h1>Annonce légale : {t.titre}</h1>
-          <p className="chapo">{t.resume}</p>
-        </div>
-      </section>
+      <EnTetePage
+        large
+        ariane={[
+          { nom: 'Annonces légales', href: '/annonces-legales' },
+          { nom: c.titre, href: `/annonces-legales/${c.slug}` },
+          { nom: t.titre },
+        ]}
+        surtitre={`Annonce légale · ${forfait ? `${euros(forfait.france)} HT` : 'tarif au caractère'}`}
+        titre={
+          <>
+            {t.titre} : <em>{SLOGANS.fiche}</em>
+          </>
+        }
+        chapo={t.resume}
+        refs={[REFERENCES.arrete]}
+      >
+        <Link href={`/tunnel?type=${t.slug}`} className="btn btn-primaire">
+          Publier cette annonce
+        </Link>
+      </EnTetePage>
 
-      <section className="section" style={{ paddingTop: 16 }}>
+      <section className="section">
         <div className="conteneur mise-en-page-fiche">
           <article className="prose">
             <h2>Combien coûte cette annonce en {ANNEE_TARIFS} ?</h2>
@@ -82,7 +98,8 @@ export default async function FicheAnnonce({ params }: { params: Promise<{ categ
               </p>
             )}
             <p>
-              Rédaction, relecture par un formaliste et attestation de parution sont incluses. <Link href="/annonces-legales/tarifs">Voir la grille complète</Link>.
+              La rédaction guidée et l’attestation de parution sont comprises : aucun frais ne s’ajoute au tarif fixé par l’État.{' '}
+              <Link href="/annonces-legales/tarifs">Voir la grille complète</Link>.
             </p>
 
             <h2>Les mentions obligatoires</h2>
@@ -92,39 +109,29 @@ export default async function FicheAnnonce({ params }: { params: Promise<{ categ
               ))}
             </ul>
 
-            <h2>Exemple d’annonce</h2>
-            <p className="muted petit">Exemple fictif, généré par notre formulaire. Votre annonce reprendra les informations de vos actes.</p>
-            <div className="apercu">{exemple}</div>
+            <h2>L’avis, tel qu’il paraîtra</h2>
+            <p className="muted petit">Exemple fictif, produit par notre formulaire. Votre annonce reprendra les informations de vos actes.</p>
+            <CoupureJournal titre={titreAvis(t.modele)} texte={exemple} lieu="Rhône (69)" />
 
             <h2>Comment la publier</h2>
             <ol>
               <li>Cliquez sur « Publier cette annonce » : le formulaire adapté s’ouvre.</li>
-              <li>Complétez-le à partir de vos actes : le texte se rédige en direct.</li>
-              <li>Vérifiez l’aperçu et le prix, puis payez en ligne.</li>
-              <li>Un formaliste relit, nous transmettons au journal habilité, vous recevez l’attestation par e-mail.</li>
+              <li>Complétez-le à partir de vos actes : l’avis s’écrit sous vos yeux.</li>
+              <li>Choisissez la date de parution, vérifiez le prix, puis payez en ligne.</li>
+              <li>L’annonce part au journal habilité, et l’attestation de parution vous revient par e-mail.</li>
             </ol>
 
             <h2>Questions fréquentes</h2>
             <Faq
               questions={[
-                {
-                  q: 'Dans quel département publier ?',
-                  r:
-                    t.modele === 'cession-fonds' || t.modele === 'location-gerance' || t.modele === 'droit-au-bail'
-                      ? 'Dans le département où se situe le fonds ou les locaux.'
-                      : t.categorie === 'personnes-physiques'
-                        ? 'Dans le département de votre domicile.'
-                        : t.variante === 'nouveau-siege'
-                          ? 'Dans le département du nouveau siège social.'
-                          : 'Dans le département du siège social de la société.',
-                },
+                { q: 'Dans quel département publier ?', r: lieuPublication },
                 {
                   q: 'Puis-je modifier le texte proposé ?',
                   r: 'Oui. L’aperçu est modifiable avant le paiement. Pour une annonce au caractère, le prix est recalculé à chaque modification.',
                 },
                 {
                   q: 'Que se passe-t-il après le paiement ?',
-                  r: 'Un formaliste vérifie la cohérence de l’annonce avec vos informations, la transmet au journal habilité, puis vous envoie l’attestation de parution par e-mail.',
+                  r: 'L’annonce est transmise au journal habilité du département. L’attestation de parution vous est envoyée par e-mail : c’est elle que vous joindrez à votre dossier au guichet unique.',
                 },
               ]}
             />
@@ -134,21 +141,21 @@ export default async function FicheAnnonce({ params }: { params: Promise<{ categ
             <div className="carte carte-ombre">
               <p className="surtitre">Tarif {ANNEE_TARIFS}</p>
               <div className="prix-grand">{forfait ? euros(forfait.france) : 'Au caractère'}</div>
-              <p className="muted petit">{forfait ? 'HT, forfait réglementé (hors 974 et 976)' : 'Prix calculé en direct selon la longueur et le département'}</p>
+              <p className="muted petit">{forfait ? 'HT, forfait réglementé (hors La Réunion et Mayotte)' : 'Prix calculé en direct selon la longueur et le département'}</p>
               <Link href={`/tunnel?type=${t.slug}`} className="btn btn-primaire btn-bloc">
                 Publier cette annonce
               </Link>
               <ul className="puces-confiance" style={{ flexDirection: 'column', gap: 6 }}>
                 <li>Journal habilité du département</li>
-                <li>Relecture par un formaliste</li>
-                <li>Attestation incluse</li>
+                <li>Mentions obligatoires contrôlées</li>
+                <li>Attestation de parution comprise</li>
               </ul>
             </div>
             {formalite && (
               <div className="carte" style={{ marginTop: 16 }}>
-                <strong>Besoin de la formalité complète ?</strong>
+                <strong>Et ensuite, le guichet unique</strong>
                 <p className="petit muted" style={{ margin: '6px 0 10px' }}>
-                  Nous publions l’annonce et déposons le dossier au guichet unique.
+                  Vos pièces pré-remplissent le brouillon de la formalité sur votre compte INPI.
                 </p>
                 <Link href={`/formalites/${formalite.categorie}/${formalite.slug}`}>{formalite.titre} →</Link>
               </div>
@@ -160,7 +167,8 @@ export default async function FicheAnnonce({ params }: { params: Promise<{ categ
       {voisins.length > 0 && (
         <section className="section section-alt">
           <div className="conteneur">
-            <h2>Autres annonces : {c.titre.toLowerCase()}</h2>
+            <p className="surtitre">Dans la même famille</p>
+            <h2>{c.titre}</h2>
             <div className="grille grille-3" style={{ marginTop: 20 }}>
               {voisins.map((v) => (
                 <Link key={v.slug} href={`/annonces-legales/${v.categorie}/${v.slug}`} className="carte carte-lien">

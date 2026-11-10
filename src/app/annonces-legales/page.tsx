@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BandeauCta } from '@/components/BandeauCta'
+import { EnTetePage } from '@/components/EnTetePage'
 import { Faq } from '@/components/Faq'
-import { FilAriane } from '@/components/FilAriane'
 import { CATEGORIES, typesDeCategorie } from '@/data/annonces'
+import { REFERENCES } from '@/data/site'
 import { ANNEE_TARIFS } from '@/data/tarifs-annonces'
 import { prixAffiche } from '@/lib/prix'
 
@@ -26,27 +27,27 @@ const sommaire = [
 export default function AnnoncesLegales() {
   return (
     <>
-      <section className="heros" style={{ paddingBottom: 24 }}>
-        <div className="conteneur">
-          <FilAriane elements={[{ nom: 'Annonces légales' }]} />
-          <span className="surtitre">Annonces légales · Tarifs {ANNEE_TARIFS}</span>
-          <h1>Publier une annonce légale en ligne</h1>
-          <p className="chapo">
-            Création, modification, fermeture : la plupart des événements de la vie d’une société doivent être rendus publics dans un
-            journal habilité. Voici comment cela fonctionne, et comment le faire en quelques minutes.
-          </p>
-          <div className="actions">
-            <Link href="/tunnel" className="btn btn-primaire">
-              Choisir mon acte
-            </Link>
-            <Link href="/annonces-legales/tarifs" className="btn btn-secondaire">
-              Grille tarifaire {ANNEE_TARIFS}
-            </Link>
-          </div>
-        </div>
-      </section>
+      <EnTetePage
+        large
+        ariane={[{ nom: 'Annonces légales' }]}
+        surtitre={`Annonces légales · Tarifs ${ANNEE_TARIFS}`}
+        titre={
+          <>
+            La loi exige une annonce. Nous en faisons <em>l’affaire de quelques secondes</em>.
+          </>
+        }
+        chapo="Création, modification, fermeture : presque chaque événement de la vie d’une société doit paraître dans un journal habilité. Voici la règle, et la façon la plus courte de s’en acquitter."
+        refs={[REFERENCES.loi1955, REFERENCES.codeCommerce, REFERENCES.arrete]}
+      >
+        <Link href="/tunnel" className="btn btn-primaire">
+          Publier mon annonce
+        </Link>
+        <Link href="/annonces-legales/tarifs" className="btn btn-secondaire">
+          Grille tarifaire {ANNEE_TARIFS}
+        </Link>
+      </EnTetePage>
 
-      <section className="section" style={{ paddingTop: 24 }}>
+      <section className="section">
         <div className="conteneur mise-en-page-fiche">
           <article className="prose">
             <h2 id="principe">À quoi sert une annonce légale</h2>
@@ -110,7 +111,10 @@ export default function AnnoncesLegales() {
               <li>Le support n’est pas habilité dans le département du siège.</li>
               <li>Le type d’avis ne correspond pas à l’acte (une transformation publiée comme une simple modification, par exemple).</li>
             </ul>
-            <p>C’est pour éviter ces rejets qu’un formaliste relit chaque annonce avant sa transmission.</p>
+            <p>
+              C’est pour éviter ces rejets que notre formulaire impose chaque mention obligatoire du type d’acte choisi, et que vous
+              relisez l’avis tel qu’il paraîtra avant de payer.
+            </p>
           </article>
 
           <aside className="colle">
@@ -133,7 +137,10 @@ export default function AnnoncesLegales() {
 
       <section className="section section-alt" id="types">
         <div className="conteneur">
-          <h2>Tous les types d’annonces</h2>
+          <p className="surtitre">Le catalogue</p>
+          <h2>
+            Un formulaire <em>pour chaque acte</em>
+          </h2>
           {CATEGORIES.map((c) => (
             <div key={c.slug} style={{ marginTop: 32 }}>
               <h3>
@@ -156,8 +163,9 @@ export default function AnnoncesLegales() {
       </section>
 
       <section className="section">
-        <div className="conteneur" style={{ maxWidth: 860 }}>
-          <h2>Questions fréquentes</h2>
+        <div className="conteneur section-etroite">
+          <p className="surtitre">Questions fréquentes</p>
+          <h2>Ce qu’il faut encore savoir</h2>
           <Faq
             questions={[
               {
@@ -166,7 +174,7 @@ export default function AnnoncesLegales() {
               },
               {
                 q: 'Une annonce peut-elle regrouper plusieurs modifications ?',
-                r: 'Oui, mais elle bascule alors au tarif au caractère. Selon la longueur, cela peut être plus ou moins cher que deux forfaits séparés : l’aperçu du tunnel vous donne le prix exact.',
+                r: 'Oui, mais elle bascule alors au tarif au caractère. Selon la longueur, cela peut être plus ou moins cher que deux forfaits séparés : l’aperçu vous donne le prix exact avant de payer.',
               },
               {
                 q: 'Qui peut commander l’annonce ?',

@@ -2,9 +2,11 @@ import type { MetadataRoute } from 'next'
 import { CATEGORIES, TYPES_ANNONCE } from '@/data/annonces'
 import { FORMALITES } from '@/data/formalites'
 import { GUIDES } from '@/data/guides'
-import { SITE } from '@/data/site'
+import { MAQUETTE, SITE } from '@/data/site'
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  // La maquette n'est pas référencée : pas de plan de site.
+  if (MAQUETTE) return []
   const pages = [
     '',
     '/annonces-legales',

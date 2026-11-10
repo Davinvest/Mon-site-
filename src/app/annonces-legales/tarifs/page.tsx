@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BandeauCta } from '@/components/BandeauCta'
+import { EnTetePage } from '@/components/EnTetePage'
 import { Faq } from '@/components/Faq'
-import { FilAriane } from '@/components/FilAriane'
 import { TYPES_ANNONCE } from '@/data/annonces'
 import { ANNEE_TARIFS, DESCRIPTION_ANNEXES, FORFAITS, REFERENCE_ARRETE, TARIF_CARACTERE, TAUX_TVA } from '@/data/tarifs-annonces'
 import type { Annexe, CleForfait } from '@/data/tarifs-annonces'
@@ -37,19 +37,23 @@ export default function Tarifs() {
   const auCaractere = TYPES_ANNONCE.filter((t) => !t.forfait)
   return (
     <>
-      <section className="heros" style={{ paddingBottom: 24 }}>
-        <div className="conteneur">
-          <FilAriane elements={[{ nom: 'Annonces légales', href: '/annonces-legales' }, { nom: `Tarifs ${ANNEE_TARIFS}` }]} />
-          <span className="surtitre">{REFERENCE_ARRETE}</span>
-          <h1>Tarifs des annonces légales en {ANNEE_TARIFS}</h1>
-          <p className="chapo">
-            Le prix d’une annonce légale ne dépend pas du journal : il est fixé chaque année par arrêté ministériel. Forfait pour les
-            formalités courantes, prix au caractère pour les autres. Tous les montants sont hors taxes (TVA {TAUX_TVA * 100} %).
-          </p>
-        </div>
-      </section>
+      <EnTetePage
+        ariane={[{ nom: 'Annonces légales', href: '/annonces-legales' }, { nom: `Tarifs ${ANNEE_TARIFS}` }]}
+        surtitre={`Tarifs ${ANNEE_TARIFS} des annonces légales`}
+        titre={
+          <>
+            Le tarif de l’État. <em>Pas un euro de plus.</em>
+          </>
+        }
+        chapo={`Le prix d’une annonce légale ne dépend pas du journal : il est fixé chaque année par arrêté ministériel. Forfait pour les formalités courantes, prix au caractère pour les autres. Tous les montants sont hors taxes (TVA ${TAUX_TVA * 100} %).`}
+        refs={[REFERENCE_ARRETE]}
+      >
+        <Link href="/tunnel" className="btn btn-primaire">
+          Publier mon annonce
+        </Link>
+      </EnTetePage>
 
-      <section className="section" style={{ paddingTop: 16 }}>
+      <section className="section">
         <div className="conteneur">
           {GROUPES.map((g) => (
             <div key={g.titre} style={{ marginBottom: 40 }}>
@@ -71,7 +75,7 @@ export default function Tarifs() {
                     {g.cles.map((cle) => (
                       <tr key={cle}>
                         <td>{FORFAITS[cle].libelle}</td>
-                        <td className="montant">{euros(FORFAITS[cle].france)}</td>
+                        <td className="montant montant-fort">{euros(FORFAITS[cle].france)}</td>
                         <td className="montant">{euros(ttc(FORFAITS[cle].france))}</td>
                         <td className="montant">{euros(FORFAITS[cle].reunionMayotte)}</td>
                         <td className="montant">
@@ -122,7 +126,8 @@ export default function Tarifs() {
       </section>
 
       <section className="section section-alt">
-        <div className="conteneur" style={{ maxWidth: 860 }}>
+        <div className="conteneur section-etroite">
+          <p className="surtitre">Questions fréquentes</p>
           <h2>Payer le juste prix</h2>
           <Faq
             questions={[
@@ -132,7 +137,7 @@ export default function Tarifs() {
               },
               {
                 q: 'Comment réduire le prix d’une annonce au caractère ?',
-                r: 'En gardant uniquement les mentions obligatoires et les abréviations admises (RCS, SARL, cap.). L’aperçu du tunnel compte les caractères en direct.',
+                r: 'En gardant uniquement les mentions obligatoires et les abréviations admises (RCS, SARL, cap.). L’aperçu compte les caractères et recalcule le prix à chaque modification.',
               },
               {
                 q: 'L’attestation de parution est-elle payante ?',

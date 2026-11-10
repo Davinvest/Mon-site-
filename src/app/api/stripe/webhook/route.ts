@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
     client: donnees.client,
     prix: await c.estimer(type, departement, donnees.texte),
     journal: await c.journalPour(departement),
+    dateParution: donnees.dateParution,
     creeLe: donnees.creeLe,
   }
 

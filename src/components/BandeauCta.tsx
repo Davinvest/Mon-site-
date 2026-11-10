@@ -1,8 +1,9 @@
 import Link from 'next/link'
+import { SLOGANS } from '@/data/site'
 
 export function BandeauCta({
-  titre = 'Le temps d’un clic, votre annonce est prête.',
-  texte = 'Pas d’abonnement, pas de frais de dossier : vous payez le tarif fixé par l’État, la rédaction et la relecture sont incluses.',
+  titre = SLOGANS.fin,
+  texte = 'Pas d’abonnement, pas de frais de dossier. Vous payez le tarif fixé par l’État, et l’attestation de parution est comprise.',
 }: {
   titre?: string
   texte?: string
@@ -14,11 +15,11 @@ export function BandeauCta({
           <h2>{titre}</h2>
           <p>{texte}</p>
           <div className="actions" style={{ justifyContent: 'center' }}>
-            <Link href="/tunnel" className="btn btn-accent">
+            <Link href="/tunnel" className="btn btn-clair">
               Publier mon annonce
             </Link>
-            <Link href="/contact" className="btn btn-secondaire">
-              Parler à un formaliste
+            <Link href="/contact" className="btn btn-contour-clair">
+              Nous contacter
             </Link>
           </div>
         </div>

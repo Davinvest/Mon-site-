@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     client: demande.client,
     prix: await c.estimer(demande.type, demande.departement, demande.texte),
     journal: await c.journalPour(demande.departement),
+    dateParution: demande.dateParution,
     creeLe: new Date().toISOString(),
   }
   const origine = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin

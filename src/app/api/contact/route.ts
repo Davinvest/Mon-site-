@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { adresseCommandes, envoyerMail } from '@/lib/mail'
 
 const EMAIL = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[a-z]{2,}$/i
-const SUJETS = ['Rappel formalité', 'Devis formalité', 'Annonce légale', 'Démo CRM / API', 'Partenariat', 'Autre']
+const SUJETS = ['Annonce légale', 'Guichet unique', 'Cabinets et démonstration', 'Partenariat', 'Autre']
 
 export async function POST(req: NextRequest) {
   let c: Record<string, unknown>

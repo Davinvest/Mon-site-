@@ -18,7 +18,7 @@ export default function Confidentialite() {
           commande, la transmettre au support habilité, facturer. Base légale : exécution du contrat.
         </li>
         <li>
-          <strong>Formulaires de contact et de rappel</strong> : identité, e-mail, téléphone, message. Finalité : répondre à la demande.
+          <strong>Formulaire de contact</strong> : identité, e-mail, téléphone, message. Finalité : répondre à la demande.
           Base légale : mesures précontractuelles.
         </li>
         <li>

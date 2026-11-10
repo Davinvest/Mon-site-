@@ -25,6 +25,8 @@ export interface Commande {
   client: Client
   prix: DetailPrix
   journal: string
+  /** Date de parution souhaitée (AAAA-MM-JJ), ou chaîne vide pour « dès que possible » */
+  dateParution: string
   creeLe: string
 }
 
@@ -33,7 +35,28 @@ export interface DemandeValide {
   codePostal: string
   departement: string
   texte: string
+  dateParution: string
   client: Client
+}
+
+/** Délai maximal, en jours, entre la commande et la date de parution souhaitée. */
+export const PARUTION_MAX_JOURS = 90
+
+const jourParis = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(d)
+
+/** Premier et dernier jour acceptés pour la parution, au format AAAA-MM-JJ. */
+export function bornesParution(maintenant = new Date()): { min: string; max: string } {
+  return { min: jourParis(maintenant), max: jourParis(new Date(maintenant.getTime() + PARUTION_MAX_JOURS * 86_400_000)) }
+}
+
+/** Renvoie la date validée, '' si aucune n'est demandée, ou null si elle est invalide. */
+export function validerDateParution(valeur: unknown, maintenant = new Date()): string | null {
+  if (valeur === undefined || valeur === null || valeur === '') return ''
+  if (typeof valeur !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valeur)) return null
+  const date = new Date(`${valeur}T12:00:00Z`)
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== valeur) return null
+  const { min, max } = bornesParution(maintenant)
+  return valeur >= min && valeur <= max ? valeur : null
 }
 
 const EMAIL = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[a-z]{2,}$/i
@@ -59,6 +82,9 @@ export function validerDemande(corps: unknown): DemandeValide | { erreur: string
   // Le département fixe le tarif : son code postal doit figurer dans le texte publié.
   if (!texte.includes(codePostal)) return { erreur: 'Le code postal du département de publication doit figurer dans l’annonce.' }
 
+  const dateParution = validerDateParution(c.dateParution)
+  if (dateParution === null) return { erreur: 'La date de parution souhaitée n’est pas valide.' }
+
   const cl = (c.client ?? {}) as Record<string, unknown>
   const client: Client = {
     prenom: chaine(cl.prenom, 80),
@@ -72,7 +98,7 @@ export function validerDemande(corps: unknown): DemandeValide | { erreur: string
   if (c.accepteCgv !== true) return { erreur: 'Vous devez accepter les conditions générales de vente.' }
   if (c.accepteExecution !== true) return { erreur: 'Vous devez demander l’exécution immédiate de la prestation.' }
 
-  return { type, codePostal, departement, texte, client }
+  return { type, codePostal, departement, texte, dateParution, client }
 }
 
 export function nouvelleReference(): string {

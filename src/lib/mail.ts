@@ -49,6 +49,11 @@ function lignesPrix(c: Commande): string {
   return `${detail}\nMontant HT : ${euros(p.ht)}\nTVA 20 % : ${euros(p.tva)}\nTotal TTC : ${euros(p.ttc)}`
 }
 
+function dateParutionLisible(c: Commande): string {
+  if (!c.dateParution) return 'dès que possible'
+  return new Date(`${c.dateParution}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+}
+
 export function mailCommandeInterne(c: Commande, statut: string): Mail {
   return {
     to: adresseCommandes(),
@@ -62,6 +67,7 @@ export function mailCommandeInterne(c: Commande, statut: string): Mail {
       `Type : ${c.typeTitre} (${c.typeSlug})`,
       `Département de publication : ${c.departement} (code postal ${c.codePostal})`,
       `Journal : ${c.journal}`,
+      `Date de parution souhaitée : ${dateParutionLisible(c)}`,
       '',
       'Client :',
       `${c.client.prenom} ${c.client.nom}${c.client.societe ? ` — ${c.client.societe}` : ''}`,
@@ -85,7 +91,7 @@ export function mailConfirmationClient(c: Commande): Mail {
       `Bonjour ${c.client.prenom},`,
       '',
       `Nous avons bien reçu votre commande ${c.reference} (${c.typeTitre}).`,
-      'Un formaliste relit votre annonce avant sa transmission au journal habilité.',
+      `Elle est transmise au journal habilité (date de parution souhaitée : ${dateParutionLisible(c)}).`,
       'Vous recevrez l’attestation de parution par e-mail dès la publication.',
       '',
       lignesPrix(c),

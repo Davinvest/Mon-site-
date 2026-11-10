@@ -7,17 +7,17 @@ export const metadata: Metadata = { title: 'Conditions générales de vente', al
 
 export default function Cgv() {
   return (
-    <PageLegale titre="Conditions générales de vente" majLe="29 octobre 2026">
+    <PageLegale titre="Conditions générales de vente" majLe="10 novembre 2026">
       <h2>1. Objet</h2>
       <p>
         Les présentes conditions régissent les commandes passées sur {SITE.domaine} auprès de {SITE.editeur.raisonSociale} (« {SITE.nom} »)
-        : publication d’annonces légales dans un support habilité et, sur devis, prise en charge de formalités d’entreprise.
+        : publication d’annonces légales dans un support habilité et préparation de brouillons de formalités au guichet unique de l’INPI.
       </p>
       <h2>2. Commande d’une annonce légale</h2>
       <p>
         Le client choisit le type d’annonce, renseigne les informations demandées et valide le texte affiché. Il est seul responsable de
-        l’exactitude des informations fournies et de leur conformité aux actes de la société. {SITE.nom} relit l’annonce et peut
-        proposer des corrections avant transmission ; aucune modification n’est apportée sans l’accord du client.
+        l’exactitude des informations fournies et de leur conformité aux actes de la société. Il relit l’avis tel qu’il paraîtra avant
+        de payer ; aucune modification n’est apportée à son texte sans son accord.
       </p>
       <p>
         L’annonce est publiée dans un support habilité du département déterminé par le code postal saisi (siège social, lieu du fonds
@@ -30,8 +30,9 @@ export default function Cgv() {
         comprises (TVA 20 %) avant le paiement. Aucun frais supplémentaire n’est facturé.
       </p>
       <p>
-        Les honoraires des formalités sont indiqués sur le site et confirmés par devis. Les frais officiels (greffe, INPI) et l’annonce
-        légale s’y ajoutent à leur tarif réglementé.
+        Les brouillons de formalités au guichet unique se règlent en jetons, selon le barème affiché sur le site. Les jetons sont
+        crédités à chaque annonce légale publiée et ne s’achètent pas. Les frais officiels de la formalité se paient directement à
+        l’INPI. Le brouillon est préparé par une intelligence artificielle : le client le relit avant de le signer.
       </p>
       <h2>4. Paiement</h2>
       <p>
@@ -48,8 +49,8 @@ export default function Cgv() {
       </p>
       <h2>6. Délais</h2>
       <p>
-        Les annonces sont relues et transmises dans les meilleurs délais, en principe le jour ouvré de la commande ou le suivant. La
-        date de parution dépend du support. {SITE.nom} ne saurait être tenu responsable d’un retard imputable au support, au greffe ou
+        Les annonces sont transmises au support dans les meilleurs délais après le paiement. La date de parution souhaitée par le
+        client est respectée dans la mesure où le support le permet. {SITE.nom} ne saurait être tenu responsable d’un retard imputable au support, au greffe ou
         au guichet unique.
       </p>
       <h2>7. Responsabilité</h2>

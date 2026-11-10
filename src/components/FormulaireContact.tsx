@@ -2,18 +2,15 @@
 
 import { useState } from 'react'
 
-const SUJETS = ['Annonce légale', 'Rappel formalité', 'Devis formalité', 'Démo CRM / API', 'Partenariat', 'Autre']
+export const SUJETS_CONTACT = ['Annonce légale', 'Guichet unique', 'Cabinets et démonstration', 'Partenariat', 'Autre']
 
 export function FormulaireContact({
   sujet = 'Annonce légale',
   origine = '',
-  rappel = false,
   libelleBouton = 'Envoyer le message',
 }: {
   sujet?: string
   origine?: string
-  /** Version courte « être rappelé » : pas de sélection de sujet, message facultatif */
-  rappel?: boolean
   libelleBouton?: string
 }) {
   const [etat, setEtat] = useState<'repos' | 'envoi' | 'ok' | 'erreur'>('repos')
@@ -41,13 +38,13 @@ export function FormulaireContact({
   if (etat === 'ok') {
     return (
       <p className="alerte alerte-ok" role="status">
-        Merci, votre demande est bien partie. Un formaliste vous répond sous 24 h ouvrées.
+        Merci, votre message est bien parti. Nous vous répondons sous 24 h ouvrées.
       </p>
     )
   }
 
   return (
-    <form onSubmit={envoyer} noValidate={false}>
+    <form onSubmit={envoyer}>
       <div className="grille-champs">
         <div className="champ">
           <label htmlFor="c-prenom">Prénom</label>
@@ -62,24 +59,20 @@ export function FormulaireContact({
           <input id="c-email" name="email" type="email" autoComplete="email" required />
         </div>
         <div className="champ">
-          <label htmlFor="c-tel">Téléphone{rappel ? '' : ' (facultatif)'}</label>
-          <input id="c-tel" name="telephone" type="tel" autoComplete="tel" required={rappel} />
+          <label htmlFor="c-tel">Téléphone (facultatif)</label>
+          <input id="c-tel" name="telephone" type="tel" autoComplete="tel" />
         </div>
-        {rappel ? (
-          <input type="hidden" name="sujet" value={sujet} />
-        ) : (
-          <div className="champ champ-large">
-            <label htmlFor="c-sujet">Sujet</label>
-            <select id="c-sujet" name="sujet" defaultValue={sujet}>
-              {SUJETS.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-        )}
         <div className="champ champ-large">
-          <label htmlFor="c-message">{rappel ? 'Votre besoin (facultatif)' : 'Message'}</label>
-          <textarea id="c-message" name="message" required={!rappel} rows={rappel ? 3 : 5} />
+          <label htmlFor="c-sujet">Sujet</label>
+          <select id="c-sujet" name="sujet" defaultValue={sujet}>
+            {SUJETS_CONTACT.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+        <div className="champ champ-large">
+          <label htmlFor="c-message">Message</label>
+          <textarea id="c-message" name="message" required rows={5} />
         </div>
       </div>
       <div className="piege" aria-hidden="true">

@@ -61,7 +61,7 @@ export const GUIDES: Guide[] = [
     titre: 'Le guichet unique de l’INPI, mode d’emploi',
     description: 'Depuis 2023, toutes les formalités d’entreprise passent par formalites.entreprises.gouv.fr. Ce qui a changé et comment s’y retrouver.',
     publieLe: '2026-10-29',
-    lienAction: { libelle: 'Confier ma formalité à un formaliste', href: '/formalites' },
+    lienAction: { libelle: 'Préparer ma formalité au guichet unique', href: '/formalites' },
     sections: [
       {
         titre: 'Ce qui a changé',
@@ -84,7 +84,7 @@ export const GUIDES: Guide[] = [
         titre: 'Les blocages fréquents',
         paragraphes: [
           'Les difficultés viennent surtout des pièces : une attestation de parution manquante, un justificatif de siège incomplet ou des statuts non signés suffisent à mettre le dossier en attente. Les demandes de régularisation arrivent par e-mail et doivent être traitées vite pour ne pas perdre la date de dépôt.',
-          'Un formaliste peut déposer pour vous en tant que mandataire : vous n’avez pas à créer de compte ni à remplir le formulaire.',
+          'Pour gagner du temps, le dossier peut être pré-rempli à partir de vos pièces : il ne vous reste alors qu’à le relire et à le signer sur le site de l’INPI.',
         ],
       },
     ],
@@ -113,7 +113,7 @@ export const GUIDES: Guide[] = [
         liste: [
           'Si le greffe rejette le dossier pour une autre raison, l’annonce reste valable : il suffit de corriger la pièce en cause.',
           'Si l’erreur porte sur l’annonce elle-même (mention manquante, capital erroné), il faut publier un avis rectificatif, facturé au caractère.',
-          'Une relecture avant parution évite ce coût et ce délai : c’est pourquoi chaque annonce passe par un formaliste chez Comptoir Légal.',
+          'Une relecture avant parution évite ce coût et ce délai : c’est pourquoi notre formulaire impose chaque mention obligatoire et vous montre l’avis tel qu’il paraîtra.',
         ],
       },
     ],

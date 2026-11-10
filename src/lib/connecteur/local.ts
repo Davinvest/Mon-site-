@@ -16,8 +16,8 @@ export const connecteurLocal: Connecteur = {
   },
 
   async transmettre(commande) {
-    // Le formaliste relit l'annonce puis la transmet au journal partenaire.
-    await envoyerMail(mailCommandeInterne(commande, 'Commande confirmée — annonce à relire et transmettre'))
-    return { statut: 'a-traiter', detail: 'Transmise à l’équipe Comptoir Légal pour relecture.' }
+    // Sans API partenaire, la commande arrive par e-mail à l'équipe, qui la transmet au journal.
+    await envoyerMail(mailCommandeInterne(commande, 'Commande confirmée — annonce à transmettre au journal'))
+    return { statut: 'a-traiter', detail: 'Transmise à l’équipe Comptoir Légal.' }
   },
 }

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { FilAriane } from '@/components/FilAriane'
-import { FormulaireContact } from '@/components/FormulaireContact'
+import { BandeauCta } from '@/components/BandeauCta'
+import { EnTetePage } from '@/components/EnTetePage'
 import { trouverType } from '@/data/annonces'
-import { CATEGORIES_FORMALITES, ETAPES_FORMALITE, FORMALITES, prixAccompagnement, trouverFormalite } from '@/data/formalites'
+import { CATEGORIES_FORMALITES, ETAPES_FORMALITE, FORMALITES, JETONS_PAR_ANNONCE, prixBrouillon, trouverFormalite } from '@/data/formalites'
 import { FORFAITS } from '@/data/tarifs-annonces'
 import { euros } from '@/lib/prix'
 
@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ categorie
   const f = trouverFormalite(categorie, slug)
   if (!f) return {}
   return {
-    title: `${f.titre} : démarches, pièces et prix`,
-    description: `${f.resume} Annonce légale au tarif officiel, dossier déposé au guichet unique par un formaliste.`,
+    title: `${f.titre} : pièces, prix et brouillon INPI`,
+    description: `${f.resume} Annonce légale au tarif officiel, puis brouillon pré-rempli sur votre compte du guichet unique.`,
     alternates: { canonical: `/formalites/${f.categorie}/${f.slug}` },
   }
 }
@@ -34,75 +34,104 @@ export default async function FicheFormalite({ params }: { params: Promise<{ cat
   const forfaitAnnonce = annonce?.forfait ? FORFAITS[annonce.forfait].france : null
 
   return (
-    <section className="section" style={{ paddingTop: 40 }}>
-      <div className="conteneur">
-        <FilAriane elements={[{ nom: 'Formalités', href: '/formalites' }, { nom: cat?.titre ?? '', href: `/formalites#${f.categorie}` }, { nom: f.titre }]} />
-        <div className="mise-en-page-fiche">
-          <article className="prose">
-            <span className="surtitre">{cat?.titre}</span>
-            <h1>{f.titre}</h1>
-            <p className="chapo">{f.resume}</p>
+    <>
+      <EnTetePage
+        large
+        ariane={[{ nom: 'Guichet unique', href: '/formalites' }, { nom: cat?.titre ?? '', href: `/formalites#${f.categorie}` }, { nom: f.titre }]}
+        surtitre={`Guichet unique · ${cat?.titre ?? ''}`}
+        titre={
+          <>
+            {f.titre} : <em>votre dossier, déjà pré-rempli</em>.
+          </>
+        }
+        chapo={f.resume}
+      />
 
-            <h2>Ce que nous faisons pour vous</h2>
+      <section className="section">
+        <div className="conteneur mise-en-page-fiche">
+          <article className="prose">
+            <h2>Comment ça se passe</h2>
             <ol>
-              {ETAPES_FORMALITE.filter((e) => annonce || !e.titre.includes('annonce')).map((e) => (
+              {annonce && (
+                <li>
+                  <strong>Vous publiez l’annonce légale.</strong> Elle précède le dépôt : l’attestation de parution fait partie des
+                  pièces du dossier.
+                </li>
+              )}
+              {ETAPES_FORMALITE.map((e) => (
                 <li key={e.titre}>
                   <strong>{e.titre}.</strong> {e.texte}
                 </li>
               ))}
             </ol>
 
-            <h2>Les pièces à fournir</h2>
+            <h2>Les pièces à déposer</h2>
             <ul>
               {f.pieces.map((p) => (
                 <li key={p}>{p}</li>
               ))}
             </ul>
+            <p className="muted petit">Liste indicative : le guichet unique peut demander d’autres justificatifs selon votre situation.</p>
 
             <h2>Le prix</h2>
             <div className="table-scroll">
               <table>
                 <tbody>
-                  <tr>
-                    <td>Accompagnement Comptoir Légal</td>
-                    <td className="montant">{prixAccompagnement(f)}</td>
-                  </tr>
                   {annonce && (
                     <tr>
                       <td>
                         Annonce légale (<Link href={`/annonces-legales/${annonce.categorie}/${annonce.slug}`}>{annonce.titre}</Link>)
                       </td>
-                      <td className="montant">{forfaitAnnonce ? `${euros(forfaitAnnonce)} HT` : 'au caractère'}</td>
+                      <td className="montant montant-fort">{forfaitAnnonce ? `${euros(forfaitAnnonce)} HT` : 'au caractère'}</td>
                     </tr>
                   )}
                   <tr>
-                    <td>Frais officiels (greffe, INPI)</td>
-                    <td className="montant">au tarif réglementé</td>
+                    <td>Brouillon pré-rempli sur votre compte INPI</td>
+                    <td className="montant montant-fort">{prixBrouillon(f)}</td>
+                  </tr>
+                  <tr>
+                    <td>Frais officiels de la formalité</td>
+                    <td className="montant">réglés à l’INPI</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <p className="muted petit" style={{ marginTop: 10 }}>
-              {f.delai}. Le devis détaillé vous est envoyé avant tout engagement.
+              Chaque annonce publiée crédite {JETONS_PAR_ANNONCE} jetons au portefeuille de votre cabinet.
             </p>
-
-            {annonce && (
-              <div className="encadre">
-                Vous voulez seulement publier l’annonce ? <Link href={`/tunnel?type=${annonce.slug}`}>Publiez-la en ligne en quelques minutes</Link>.
-              </div>
-            )}
           </article>
 
           <aside className="colle">
             <div className="carte carte-ombre">
-              <p className="surtitre">Gratuit · sans engagement</p>
-              <h2 style={{ fontSize: '1.3rem' }}>Être rappelé par un formaliste</h2>
-              <p className="petit muted">Nous cadrons votre dossier et vous envoyons un devis sous 24 h ouvrées.</p>
-              <FormulaireContact rappel sujet="Rappel formalité" origine={`/formalites/${f.categorie}/${f.slug}`} libelleBouton="Être rappelé" />
+              <p className="surtitre">Brouillon INPI</p>
+              <div className="prix-grand">{prixBrouillon(f)}</div>
+              <p className="muted petit">Débités du portefeuille, rendus si le brouillon n’est pas créé.</p>
+              <Link href="/connexion" className="btn btn-primaire btn-bloc">
+                Commencer cette formalité
+              </Link>
+              <ul className="puces-confiance" style={{ flexDirection: 'column', gap: 6 }}>
+                <li>Pré-rempli à partir de vos pièces</li>
+                <li>Vous relisez et signez à l’INPI</li>
+                <li>Pièces supprimées après 30 jours</li>
+              </ul>
             </div>
+            {annonce && (
+              <div className="carte" style={{ marginTop: 16 }}>
+                <strong>D’abord, l’annonce légale</strong>
+                <p className="petit muted" style={{ margin: '6px 0 12px' }}>
+                  {annonce.titre}
+                  {forfaitAnnonce ? ` · ${euros(forfaitAnnonce)} HT` : ''}. Elle se publie sans compte.
+                </p>
+                <Link href={`/tunnel?type=${annonce.slug}`} className="btn btn-secondaire btn-bloc">
+                  Publier l’annonce
+                </Link>
+              </div>
+            )}
           </aside>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <BandeauCta />
+    </>
   )
 }

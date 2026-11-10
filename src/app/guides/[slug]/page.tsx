@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { BandeauCta } from '@/components/BandeauCta'
-import { FilAriane } from '@/components/FilAriane'
+import { EnTetePage } from '@/components/EnTetePage'
 import { GUIDES, trouverGuide } from '@/data/guides'
 import { SITE } from '@/data/site'
 
@@ -29,17 +29,19 @@ export default async function PageGuide({ params }: { params: Promise<{ slug: st
     datePublished: g.publieLe,
     publisher: { '@type': 'Organization', name: SITE.nom, url: SITE.url },
   }
+  const majLe = new Date(g.publieLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
   return (
     <>
-      <section className="section" style={{ paddingTop: 40 }}>
-        <div className="conteneur">
-          <FilAriane elements={[{ nom: 'Guides', href: '/guides' }, { nom: g.titre }]} />
+      <EnTetePage
+        large
+        ariane={[{ nom: 'Guides', href: '/guides' }, { nom: g.titre }]}
+        surtitre={`Guide · mis à jour le ${majLe}`}
+        titre={g.titre}
+        chapo={g.description}
+      />
+      <section className="section">
+        <div className="conteneur mise-en-page-fiche">
           <article className="prose">
-            <h1>{g.titre}</h1>
-            <p className="chapo">{g.description}</p>
-            <p className="petit muted">
-              Mis à jour le {new Date(g.publieLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
             {g.sections.map((s) => (
               <section key={s.titre}>
                 <h2>{s.titre}</h2>
@@ -53,10 +55,16 @@ export default async function PageGuide({ params }: { params: Promise<{ slug: st
                 )}
               </section>
             ))}
-            <div className="encadre">
-              <Link href={g.lienAction.href}>{g.lienAction.libelle} →</Link>
-            </div>
           </article>
+          <aside className="colle">
+            <div className="carte carte-ombre">
+              <p className="surtitre">Passez à l’action</p>
+              <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', fontWeight: 600 }}>{g.lienAction.libelle}</p>
+              <Link href={g.lienAction.href} className="btn btn-primaire btn-bloc">
+                Commencer
+              </Link>
+            </div>
+          </aside>
         </div>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       </section>

@@ -10,6 +10,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  async redirects() {
+    return [{ source: '/tarifs', destination: '/annonces-legales/tarifs', permanent: true }]
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
